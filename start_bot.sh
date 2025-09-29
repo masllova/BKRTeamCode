@@ -3,7 +3,7 @@
 PROJECT_DIR=~/VKRTeamBot
 REPO_URL="https://github.com/masllova/BKRTeamCode"
 
-echo "🚀 Старт скрипта запуска VKRTeamBot..."
+echo "🚀 Запускаем код для VKRTeamBot..."
 
 if [ ! -d "$PROJECT_DIR" ]; then
     git clone $REPO_URL $PROJECT_DIR
