@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PROJECT_DIR=~/VKRTeamBot
-REPO_URL="https://github.com/masllova/BKRTeamCode"
+REPO_URL="https://github.com/masllova/VKRTeamCode"
 
 echo "🚀 Запускаем код для VKRTeamBot..."
 
