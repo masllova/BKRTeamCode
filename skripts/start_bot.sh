@@ -1,34 +1,16 @@
-#!/bin/bash
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
+from handlers.start import start
+from handlers.registration import handle_message
+from config import TOKEN
 
-PROJECT_DIR=~/VKRTeamBot
-REPO_URL="https://github.com/masllova/VKRTeamCode"
+def main():
+    app = ApplicationBuilder().token(TOKEN).build()
 
-echo "🚀 Запускаем код для VKRTeamBot..."
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-if [ ! -d "$PROJECT_DIR" ]; then
-    git clone $REPO_URL $PROJECT_DIR
-fi
+    print("🚀 Бот запущен...")
+    app.run_polling()
 
-cd $PROJECT_DIR || exit
-git pull
-
-# Виртуальное окружение
-if [ ! -d "venv" ]; then
-    echo "⚙️ Создаём виртуальное окружение..."
-    python3 -m venv venv
-    echo "✔️ Виртуальное окружение создано!"
-fi
-echo "⚙️ Активируем виртуальное окружение..."
-source venv/bin/activate
-pip install -r requirements.txt
-echo "✔️ Зависимости установлены!"
-
-# Токен бота
-if [ -z "$TELEGRAM_TOKEN" ]; then
-    read -p "Введите токен бота: " BOT_TOKEN
-    export TELEGRAM_TOKEN="$BOT_TOKEN"
-fi
-
-# Запуск бота
-echo "⚙️ Ещё немного"
-python main.py
+if __name__ == "__main__":
+    main()
