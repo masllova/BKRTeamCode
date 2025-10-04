@@ -8,4 +8,4 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     user_state[chat_id] = "awaiting_name"
 
-    await update.message.reply_text(START_MESSAGE)
+    await update.message.reply_text(START_MESSAGE) 

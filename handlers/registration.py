@@ -21,5 +21,5 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         add_user(chat_id, full_name, role)
         user_state.pop(chat_id, None)
 
-        await update.message.reply_text(REGISTRATION_SUCCESS.format(full_name))
+        await update.message.reply_text(REGISTRATION_SUCCESS.format(full_name=full_name))
         print(f"✔️ Сохранили пользователя: {full_name} (telegram_id={chat_id}, role={role})")
