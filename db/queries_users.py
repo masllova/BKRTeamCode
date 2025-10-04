@@ -1,6 +1,6 @@
 from db.connection import conn, cursor
 
-def add_user(telegram_id: int, full_name: str, role: str = "студент"):
+def add_user(telegram_id: int, full_name: str, role: str):
     cursor.execute(
         """
         INSERT INTO users (telegram_id, full_name, role)
