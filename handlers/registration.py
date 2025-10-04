@@ -3,7 +3,9 @@ from telegram.ext import ContextTypes
 from db.queries_users import user_exists, add_user
 from texts.registration import ALREADY_REGISTERED, SELECT_ROLE, REGISTRATION_SUCCESS
 from keyboards.registration import ROLE_KEYBOARD
-from handlers.registration import user_state, user_data_temp
+
+user_state = {}
+user_data_temp = {}
 
 async def handle_name_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
