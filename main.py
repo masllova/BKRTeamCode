@@ -1,13 +1,14 @@
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackQueryHandler
 from handlers.start import start
-from handlers.registration import handle_message
+from handlers.registration import handle_name_callback, handle_role_callback
 from config import TOKEN
 
 def main():
     app = ApplicationBuilder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_name_callback))
+    app.add_handler(CallbackQueryHandler(handle_role_callback))
 
     print("🚀 Бот запущен...")
     app.run_polling()
