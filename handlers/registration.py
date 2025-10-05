@@ -45,41 +45,37 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             await update.message.reply_text(SELECT_STAGE_TEACHER, reply_markup=TEACHER_STAGES)
 
-async def handle_role_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-
     chat_id = query.message.chat_id
-    role_key = query.data  # "student" or "teacher"
+    data = query.data
+    state = user_state.get(chat_id)
 
-    user_data_temp[chat_id]["role"] = role_key
-    user_state[chat_id] = "awaiting_university"
+    if state == "awaiting_role":
+        user_data_temp[chat_id]["role"] = data
+        user_state[chat_id] = "awaiting_university"
 
-    if role_key == "student":
-        text = SELECT_UNIVERSITY_STUDENT
-    else:
-        text = SELECT_UNIVERSITY_TEACHER
+        if data == "student":
+            text = SELECT_UNIVERSITY_STUDENT
+        else:
+            text = SELECT_UNIVERSITY_TEACHER
 
-    await query.message.reply_text(text)
+        await query.message.reply_text(text)
 
-async def handle_stage_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
+    elif state == "awaiting_stage":
+        full_name = user_data_temp[chat_id]["full_name"]
+        role_key = user_data_temp[chat_id]["role"]
+        university = user_data_temp[chat_id]["university"]
+        stage = data
 
-    chat_id = query.message.chat_id
-    stage = query.data 
+        add_user(chat_id, full_name, role_key, university, stage)
 
-    full_name = user_data_temp[chat_id]["full_name"]
-    role_key = user_data_temp[chat_id]["role"]
-    university = user_data_temp[chat_id]["university"]
+        user_state.pop(chat_id, None)
+        user_data_temp.pop(chat_id, None)
 
-    add_user(chat_id, full_name, role_key, university, stage)
-
-    user_state.pop(chat_id, None)
-    user_data_temp.pop(chat_id, None)
-
-    await query.message.reply_text(
-        REGISTRATION_SUCCESS.format(full_name=full_name)
-    )
-    print(f"✔️ Сохранили пользователя: {full_name}, role={role_key}, "
-          f"university={university}, stage={stage}")
+        await query.message.reply_text(
+            REGISTRATION_SUCCESS.format(full_name=full_name)
+        )
+        print(f"✔️ Сохранили пользователя: {full_name}, role={role_key}, "
+              f"university={university}, stage={stage}")
