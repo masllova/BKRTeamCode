@@ -17,21 +17,33 @@ from texts.registration import (
 user_state = {}
 user_data_temp = {}
 
-async def handle_name_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
     text = update.message.text.strip()
+    state = user_state.get(chat_id)
 
-    if user_state.get(chat_id) != "awaiting_name":
-        return
+    if state == "awaiting_name":
+        if user_exists(chat_id):
+            await update.message.reply_text(ALREADY_REGISTERED)
+            return
+        user_data_temp[chat_id] = {"full_name": text}
+        user_state[chat_id] = "awaiting_role"
+        await update.message.reply_text(SELECT_ROLE, reply_markup=ROLE_KEYBOARD)
 
-    if user_exists(chat_id):
-        await update.message.reply_text(ALREADY_REGISTERED)
-        return
+    elif state == "awaiting_university":
+        if chat_id not in user_data_temp or "role" not in user_data_temp[chat_id]:
+            await update.message.reply_text(REGISTRATTION_ERROR)
+            user_state.pop(chat_id, None)
+            user_data_temp.pop(chat_id, None)
+            return
+        user_data_temp[chat_id]["university"] = text
+        role_key = user_data_temp[chat_id]["role"]
+        user_state[chat_id] = "awaiting_stage"
 
-    user_data_temp[chat_id] = {"full_name": text}
-    user_state[chat_id] = "awaiting_role"
-
-    await update.message.reply_text(SELECT_ROLE, reply_markup=ROLE_KEYBOARD)
+        if role_key == "student":
+            await update.message.reply_text(SELECT_STAGE_STUDENT, reply_markup=STUDENT_STAGES)
+        else:
+            await update.message.reply_text(SELECT_STAGE_TEACHER, reply_markup=TEACHER_STAGES)
 
 async def handle_role_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -49,28 +61,6 @@ async def handle_role_callback(update: Update, context: ContextTypes.DEFAULT_TYP
         text = SELECT_UNIVERSITY_TEACHER
 
     await query.message.reply_text(text)
-
-async def handle_university_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.message.chat_id
-    text = update.message.text.strip()
-
-    if user_state.get(chat_id) != "awaiting_university":
-        return
-
-    if chat_id not in user_data_temp or "role" not in user_data_temp[chat_id]:
-        await update.message.reply_text(REGISTRATTION_ERROR)
-        user_state.pop(chat_id, None)
-        user_data_temp.pop(chat_id, None)
-        return
-
-    user_data_temp[chat_id]["university"] = text
-    role_key = user_data_temp[chat_id]["role"]
-    user_state[chat_id] = "awaiting_stage"
-
-    if role_key == "student":
-        await update.message.reply_text(SELECT_STAGE_STUDENT, reply_markup=STUDENT_STAGES)
-    else:
-        await update.message.reply_text(SELECT_STAGE_TEACHER, reply_markup=TEACHER_STAGES)
 
 async def handle_stage_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
