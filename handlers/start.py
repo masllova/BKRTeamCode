@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from handlers.registration import user_state
 from db.queries_users import user_exists
-from texts.registration import ALREADY_REGISTERED, START_MESSAGE
+from texts.start import ALREADY_REGISTERED, START_MESSAGE
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
