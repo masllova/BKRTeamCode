@@ -1,10 +1,9 @@
 from telegram import Update
 from telegram.ext import ContextTypes
-from db.queries_users import add_user, user_exists
+from db.queries_users import add_user
 from keyboards.registration import ROLE_KEYBOARD
 from keyboards.stage import STUDENT_STAGES, TEACHER_STAGES
 from texts.registration import (
-    ALREADY_REGISTERED,
     SELECT_ROLE,
     SELECT_UNIVERSITY_STUDENT,
     SELECT_UNIVERSITY_TEACHER,
@@ -23,9 +22,6 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     state = user_state.get(chat_id)
 
     if state == "awaiting_name":
-        if user_exists(chat_id):
-            await update.message.reply_text(ALREADY_REGISTERED)
-            return
         user_data_temp[chat_id] = {"full_name": text}
         user_state[chat_id] = "awaiting_role"
         await update.message.reply_text(SELECT_ROLE, reply_markup=ROLE_KEYBOARD)
