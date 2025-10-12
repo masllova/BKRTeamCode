@@ -24,3 +24,19 @@ def get_user_role(telegram_id: int) -> str | None:
     if result:
         return result[0]
     return None
+
+def get_user_by_chat_id(telegram_id: int) -> dict | None:
+    cursor.execute(
+        "SELECT telegram_id, full_name, role, university, stage FROM users WHERE telegram_id = %s;",
+        (telegram_id,)
+    )
+    result = cursor.fetchone()
+    if result:
+        return {
+            "telegram_id": result[0],
+            "full_name": result[1],
+            "role": result[2],
+            "university": result[3],
+            "stage": result[4],
+        }
+    return None
