@@ -1,9 +1,10 @@
 from telegram import Update
 from telegram.ext import ContextTypes
+from keyboards.menu import BUTTON_TO_COMMAND
 
 async def handle_menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    command = query.data
+    text = update.message.text
+    command = BUTTON_TO_COMMAND.get(text)
 
     if command == "projects":
         await query.message.reply_text("📁 Открываю ваши проекты...")
