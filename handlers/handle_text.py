@@ -10,8 +10,11 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if chat_id in user_state:
         await handle_registration_text(update, context)
         return
+    
+    print(f"DEBUG: got text '{text}'")
+    print(f"DEBUG: known buttons {list(BUTTON_TO_COMMAND.keys())}")
 
-    all_buttons = [btn for row in STUDENT_MENU_BUTTONS + TEACHER_MENU_BUTTONS for btn in row]
+    all_buttons = STUDENT_MENU_BUTTONS + TEACHER_MENU_BUTTONS
     if update.message.text in all_buttons:
         await handle_menu_text(update, context)
         return

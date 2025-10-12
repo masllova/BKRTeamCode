@@ -6,9 +6,6 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
     command = BUTTON_TO_COMMAND.get(text)
 
-    print(f"DEBUG: got text '{text}'")
-    print(f"DEBUG: known buttons {list(BUTTON_TO_COMMAND.keys())}")
-
     if command == "projects":
         await update.message.reply_text("📁 Открываю ваши проекты...")
     elif command == "requests":
