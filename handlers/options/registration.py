@@ -17,7 +17,7 @@ from texts.registration import (
 user_state = {}
 user_data_temp = {}
 
-async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def handle_registration_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
     text = update.message.text.strip()
     state = user_state.get(chat_id)
@@ -77,6 +77,6 @@ async def handle_registration_callback(update: Update, context: ContextTypes.DEF
 
         keyboard = get_menu_keyboard(role_key)
         await query.message.reply_text("📋 Доступные команды:", reply_markup=keyboard)
-        
+
         print(f"✔️ Сохранили пользователя: {full_name}, role={role_key}, "
             f"university={university}, stage={stage}")

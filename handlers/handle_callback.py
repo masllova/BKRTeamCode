@@ -2,7 +2,6 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from db.queries_users import get_user_by_chat_id
 from handlers.options.registration import handle_registration_callback, user_state
-from handlers.options.menu import handle_menu_callback
 
 
 async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -12,7 +11,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = get_user_by_chat_id(chat_id)
 
     if user:
-        await handle_menu_callback(update, context)
+        # to do
         return
 
     if chat_id in user_state:

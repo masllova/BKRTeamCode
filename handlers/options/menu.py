@@ -2,7 +2,9 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from keyboards.menu import BUTTON_TO_COMMAND
 
-async def handle_menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
     text = update.message.text
     command = BUTTON_TO_COMMAND.get(text)
 

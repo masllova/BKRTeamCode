@@ -1,6 +1,6 @@
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 from handlers.options.start import start
-from handlers.options.registration import handle_text
+from handlers.handle_text import handle_text
 from handlers.handle_callback import handle_callback
 from config import TOKEN
 
