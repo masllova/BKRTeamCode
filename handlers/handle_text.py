@@ -11,6 +11,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await handle_registration_text(update, context)
         return
 
+    print(update.message.text)
     all_buttons = STUDENT_MENU_BUTTONS + TEACHER_MENU_BUTTONS
     if update.message.text in all_buttons:
         await handle_menu_text(update, context)
