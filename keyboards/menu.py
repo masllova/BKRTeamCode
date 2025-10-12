@@ -27,4 +27,5 @@ BUTTON_TO_COMMAND = {
 
 def get_menu_keyboard(role: str) -> ReplyKeyboardMarkup:
     buttons = STUDENT_MENU_BUTTONS if role == "student" else TEACHER_MENU_BUTTONS
-    return ReplyKeyboardMarkup(buttons, resize_keyboard=True, one_time_keyboard=False)
+    keyboard = [buttons[i:i+2] for i in range(0, len(buttons), 2)]
+    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=False)
