@@ -3,6 +3,7 @@ from telegram.ext import ContextTypes
 from db.queries_users import add_user
 from keyboards.registration import ROLE_KEYBOARD
 from keyboards.stage import STUDENT_STAGES, TEACHER_STAGES
+from keyboards.menu import STUDENT_MENU, TEACHER_MENU
 from texts.registration import (
     SELECT_ROLE,
     SELECT_UNIVERSITY_STUDENT,
@@ -73,5 +74,11 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.reply_text(
             REGISTRATION_SUCCESS.format(full_name=full_name)
         )
+        
+        if role_key == "student":
+            await query.message.reply_text("📋 Доступные команды:", reply_markup=STUDENT_MENU)
+        else:
+            await query.message.reply_text("📋 Доступные команды:", reply_markup=TEACHER_MENU)
+
         print(f"✔️ Сохранили пользователя: {full_name}, role={role_key}, "
-              f"university={university}, stage={stage}")
+            f"university={university}, stage={stage}")
