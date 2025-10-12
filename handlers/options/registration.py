@@ -71,12 +71,11 @@ async def handle_registration_callback(update: Update, context: ContextTypes.DEF
         user_state.pop(chat_id, None)
         user_data_temp.pop(chat_id, None)
 
-        await query.message.reply_text(
-            REGISTRATION_SUCCESS.format(full_name=full_name)
-        )
-
         keyboard = get_menu_keyboard(role_key)
-        await query.message.reply_text("📋 Доступные команды:", reply_markup=keyboard)
+        await query.message.reply_text(
+            REGISTRATION_SUCCESS.format(full_name=full_name),
+            reply_markup=keyboard
+        )
 
         print(f"✔️ Сохранили пользователя: {full_name}, role={role_key}, "
             f"university={university}, stage={stage}")
