@@ -1,6 +1,6 @@
 from telegram import Update
 from telegram.ext import ContextTypes
-from handlers.registration import user_state
+from handlers.options.registration import user_state
 from db.queries_users import user_exists, get_user_role
 from texts.start import ALREADY_REGISTERED, START_MESSAGE
 from keyboards.menu import STUDENT_MENU, TEACHER_MENU
