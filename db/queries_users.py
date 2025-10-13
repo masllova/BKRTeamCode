@@ -40,3 +40,54 @@ def get_user_by_chat_id(telegram_id: int) -> dict | None:
             "stage": result[4],
         }
     return None
+
+def search_users(query: str, target_role: str, last_id: int | None = None) -> list[dict] | None:
+    base_sql = """
+        SELECT id, telegram_id, full_name, role, university, stage, faculty, department, articles, research_interests
+        FROM users
+        WHERE role = %s
+    """
+    params = [target_role]
+
+    if last_id:
+        base_sql += " AND id > %s"
+        params.append(last_id)
+
+    base_sql += """
+      AND (
+           full_name ILIKE %s
+        OR university ILIKE %s
+        OR stage ILIKE %s
+        OR faculty ILIKE %s
+        OR department ILIKE %s
+        OR articles ILIKE %s
+        OR research_interests ILIKE %s
+      )
+    ORDER BY id
+    LIMIT 5;
+    """
+
+    search_pattern = f"%{query}%"
+    params.extend([search_pattern] * 7)
+    cursor.execute(base_sql, tuple(params))
+    results = cursor.fetchall()
+
+    if not results:
+        return None
+
+    users = []
+    for r in results:
+        users.append({
+            "id": r[0],
+            "telegram_id": r[1],
+            "full_name": r[2],
+            "role": r[3],
+            "university": r[4],
+            "stage": r[5],
+            "faculty": r[6],
+            "department": r[7],
+            "articles": r[8],
+            "research_interests": r[9],
+        })
+
+    return users
