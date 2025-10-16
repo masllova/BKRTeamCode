@@ -23,7 +23,7 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
     state = search_state.get(chat_id, {})
     
     if state.get("state") != "searching_results":
-        user_role = await get_user_role(chat_id)
+        user_role = get_user_role(chat_id)
         target_role = "teacher" if user_role == "student" else "student"
 
         search_state[chat_id] = {
