@@ -26,7 +26,12 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     command = BUTTON_TO_COMMAND.get(text, "unknown")
 
     if command == "search":
-        menu_state[chat_id] = "awaiting_search_query"
+        menu_state[chat_id] = {
+            "state": "awaiting_search_query",
+            "query": None,
+            "last_id": None,
+            "target_role": None
+        }
         await update.message.reply_text("🔍 Введите текст для поиска пользователей:")
         return
 
