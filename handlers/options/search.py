@@ -1,55 +1,46 @@
-from telegram import Update, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from db.queries_users import get_user_role, search_users
 from handlers.options.menu import menu_state
 from texts.search import SEARCH_STUDENT, SEARCH_TEACHER
 from keyboards.search import REQUEST_BUTON, SEARCH_MORE_BUTTON, BACK_BUTTON
+from keyboards.menu import get_menu_keyboard
+from db.queries_users import get_user_by_chat_id
 
 search_state: dict[int, dict] = {}
 
 async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
-    role = await get_user_role(chat_id)
-
-    if role == "student":
-        await update.message.reply_text(SEARCH_STUDENT)
-    else:
-        await update.message.reply_text(SEARCH_TEACHER)
-    return
-
-async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.message.chat_id
     text = update.message.text.strip()
-    state = search_state.get(chat_id, {})
-    
-    if state.get("state") != "searching_results":
+
+    if menu_state.get(chat_id, {}).get("state") != "searching_results":
         user_role = get_user_role(chat_id)
         target_role = "teacher" if user_role == "student" else "student"
 
-        search_state[chat_id] = {
+        menu_state[chat_id] = {
             "state": "searching_results",
             "query": text,
             "last_id": None,
             "target_role": target_role
         }
 
-    query = search_state[chat_id]["query"]
-    last_id = search_state[chat_id]["last_id"]
-    target_role = search_state[chat_id]["target_role"]
-
-    users = search_users(query, target_role, last_id)
+    query_text = menu_state[chat_id]["query"]
+    last_id = menu_state[chat_id]["last_id"]
+    target_role = menu_state[chat_id]["target_role"]
+    users = search_users(query_text, target_role, last_id)
 
     if not users:
-        keyboard = InlineKeyboardMarkup([[BACK_BUTTON
-]])
+        keyboard = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🔁 Попробовать снова", callback_data="search_retry")],
+            [InlineKeyboardButton("🏠 Выйти в меню", callback_data="search_exit")]
+        ])
         await update.message.reply_text(
-            "❌ Пользователи не найдены.",
+            "😕 Ничего не найдено.\nПопробуйте уточнить запрос.",
             reply_markup=keyboard
         )
-        search_state.pop(chat_id, None)
         return
 
-    search_state[chat_id]["last_id"] = users[-1]["id"] if len(users) == 5 else None
+    menu_state[chat_id]["last_id"] = users[-1]["id"] if len(users) == 5 else None
 
     for u in users:
         text_card = (
@@ -77,3 +68,44 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
         "Выберите действие:",
         reply_markup=InlineKeyboardMarkup([last_buttons])
     )
+
+async def handle_search_query_callback(update, context):
+    query = update.callback_query
+    chat_id = query.message.chat_id
+    data = query.data
+    user = get_user_by_chat_id(chat_id)
+
+    if data == "search_exit":
+        keyboard = get_menu_keyboard(user["role"])
+        await query.message.reply_text(text="", reply_markup=keyboard)
+        menu_state.pop(chat_id, None)
+        return
+    elif data == "search_retry":
+        role = await get_user_role(chat_id)
+
+        if role == "student":
+            await update.message.reply_text(SEARCH_STUDENT)
+        else:
+            await update.message.reply_text(SEARCH_TEACHER)
+        menu_state[chat_id] = {"state": "awaiting_search_query"}
+        return
+    
+async def handle_searching_results_callback(update, context):
+    query = update.callback_query
+    chat_id = query.message.chat_id
+    data = query.data
+    user = get_user_by_chat_id(chat_id)
+
+    if data.startswith("request_"):
+        target_id = int(data.split("_")[1])
+        # to do
+        print("заявка отправлна", target_id)
+        return
+    elif data == "search_more":
+        await handle_search_text(update, context)
+        return
+    elif data == "search_exit":
+        keyboard = get_menu_keyboard(user["role"])
+        await query.message.reply_text(text="", reply_markup=keyboard)
+        menu_state.pop(chat_id, None)
+        return
