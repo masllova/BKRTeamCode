@@ -1,6 +1,7 @@
 from telegram import Update, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from db.queries_users import get_user_role, search_users
+from handlers.options.menu import menu_state
 from texts.search import SEARCH_STUDENT, SEARCH_TEACHER
 from keyboards.search import REQUEST_BUTON, SEARCH_MORE_BUTTON, BACK_BUTTON
 
