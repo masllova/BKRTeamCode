@@ -2,8 +2,8 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from keyboards.menu import STUDENT_MENU_BUTTONS, TEACHER_MENU_BUTTONS
 from handlers.options.registration import handle_registration_text, user_state
-from handlers.options.menu import handle_menu_text, menu_state
-from handlers.options.search import handle_search_text
+from handlers.options.menu import handle_menu_text
+from handlers.options.search import handle_search_text, search_state
 
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
@@ -13,7 +13,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await handle_registration_text(update, context)
         return
 
-    if menu_state.get(chat_id, {}).get("state") == "awaiting_search_query":
+    if search_state.get(chat_id, {}).get("state") == "awaiting_search_query":
         await handle_search_text(update, context)
         return
 

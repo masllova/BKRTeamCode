@@ -2,8 +2,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from db.queries_users import get_user_by_chat_id
 from handlers.options.registration import handle_registration_callback, user_state
-from handlers.options.menu import menu_state
-from handlers.options.search import handle_search_query_callback, handle_searching_results_callback
+from handlers.options.search import handle_search_query_callback, handle_searching_results_callback, search_state
 
 async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -20,7 +19,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.reply_text("❗ Пожалуйста, пройдите регистрацию с начала: /start")
         return
 
-    state_info = menu_state.get(chat_id, {})
+    state_info = search_state.get(chat_id, {})
     state = state_info.get("state")
 
     if state == "awaiting_search_query":
