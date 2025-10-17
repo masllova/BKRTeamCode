@@ -60,9 +60,11 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
     last_buttons = []
 
     if search_state[chat_id]["last_id"]:
-        last_buttons.append(SEARCH_MORE_BUTTON)
-    last_buttons.append(InlineKeyboardButton("🔎 Новый поиск", callback_data="search_retry"))
-    last_buttons.append(InlineKeyboardButton("🏠 Выйти в меню", callback_data="search_exit"))
+        last_buttons.append([SEARCH_MORE_BUTTON])
+    last_buttons.append([
+        InlineKeyboardButton("Новый поиск", callback_data="search_retry"),
+        InlineKeyboardButton("Выйти в меню", callback_data="search_exit")
+    ])
 
     await update.message.reply_text(
         "Выберите действие:",
