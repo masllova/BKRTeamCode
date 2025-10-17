@@ -110,7 +110,7 @@ async def handle_searching_results_callback(update, context):
         return
 
     elif data == "search_more":
-        await handle_search_text(query.message, context)
+        await handle_search_text(update, context)
         return
 
     elif data == "search_exit":
