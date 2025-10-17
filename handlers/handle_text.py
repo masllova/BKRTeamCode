@@ -12,10 +12,8 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if chat_id in user_state:
         await handle_registration_text(update, context)
         return
-    
-    print(menu_state)
 
-    if menu_state.get(chat_id) == "awaiting_search_query":
+    if menu_state.get(chat_id, {}).get("state") == "awaiting_search_query":
         await handle_search_text(update, context)
         return
 
