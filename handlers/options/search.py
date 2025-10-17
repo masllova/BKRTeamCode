@@ -71,41 +71,50 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 async def handle_search_query_callback(update, context):
     query = update.callback_query
-    chat_id = query.message.chat_id
+    await query.answer()
+    chat_id = query.message.chat.id
     data = query.data
     user = get_user_by_chat_id(chat_id)
 
     if data == "search_exit":
         keyboard = get_menu_keyboard(user["role"])
-        await query.message.reply_text(text="", reply_markup=keyboard)
+        await query.edit_message_reply_markup(reply_markup=keyboard)
         search_state.pop(chat_id, None)
         return
-    elif data == "search_retry":
-        role = await get_user_role(chat_id)
 
+    elif data == "search_retry":
+        role = get_user_role(chat_id)
         if role == "student":
-            await update.message.reply_text(SEARCH_STUDENT)
+            await query.message.reply_text(SEARCH_STUDENT)
         else:
-            await update.message.reply_text(SEARCH_TEACHER)
-        search_state[chat_id] = {"state": "awaiting_search_query"}
+            await query.message.reply_text(SEARCH_TEACHER)
+        search_state[chat_id] = {
+            "state": "awaiting_search_query",
+            "query": None,
+            "last_id": None,
+            "target_role": None
+        }
         return
-    
+
 async def handle_searching_results_callback(update, context):
     query = update.callback_query
-    chat_id = query.message.chat_id
+    await query.answer()
+    chat_id = query.message.chat.id
     data = query.data
     user = get_user_by_chat_id(chat_id)
 
     if data.startswith("request_"):
         target_id = int(data.split("_")[1])
-        # to do
-        print("заявка отправлна", target_id)
+        # to do: логика отправки заявки
+        print("Заявка отправлена", target_id)
         return
+
     elif data == "search_more":
-        await handle_search_text(update, context)
+        await handle_search_text(query.message, context)
         return
+
     elif data == "search_exit":
         keyboard = get_menu_keyboard(user["role"])
-        await query.message.reply_text(text="", reply_markup=keyboard)
+        await query.edit_message_reply_markup(reply_markup=keyboard)
         search_state.pop(chat_id, None)
         return
