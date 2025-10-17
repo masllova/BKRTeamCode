@@ -64,7 +64,7 @@ def search_users(query: str, target_role: str, last_id: int | None = None) -> li
         OR research_interests ILIKE %s
       )
     ORDER BY id
-    LIMIT 5;
+    LIMIT 3;
     """
 
     search_pattern = f"%{query}%"

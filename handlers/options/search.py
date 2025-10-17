@@ -26,7 +26,7 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
     query_text = search_state[chat_id]["query"]
     last_id = search_state[chat_id]["last_id"]
     target_role = search_state[chat_id]["target_role"]
-    users = search_users(query_text, target_role, last_id, limit=3)
+    users = search_users(query_text, target_role, last_id)
 
     if not users:
         keyboard = InlineKeyboardMarkup([
