@@ -56,18 +56,17 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
         keyboard = InlineKeyboardMarkup([[REQUEST_BUTON]])
         await update.message.reply_text(text_card, reply_markup=keyboard)
 
-    last_buttons = []
+    buttons = []
 
     if search_state[chat_id]["last_id"]:
-        last_buttons.append([SEARCH_MORE_BUTTON])
-    last_buttons.append([
-        [InlineKeyboardButton("🔎 Новый поиск", callback_data="search_retry")],
-        [InlineKeyboardButton("🏠 Выйти в меню", callback_data="search_exit")]
-    ])
+        buttons.append([SEARCH_MORE_BUTTON])
+
+    buttons.append([InlineKeyboardButton("Новый поиск", callback_data="search_retry")])
+    buttons.append([InlineKeyboardButton("Выйти в меню", callback_data="search_exit")])
 
     await update.message.reply_text(
         "Выберите действие:",
-        reply_markup=InlineKeyboardMarkup(last_buttons)
+        reply_markup=InlineKeyboardMarkup(buttons)
     )
 
 async def handle_search_query_callback(update, context):
