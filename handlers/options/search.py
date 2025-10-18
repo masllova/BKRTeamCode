@@ -110,7 +110,11 @@ async def handle_searching_results_callback(update, context):
         return
 
     elif data == "search_more":
-        await handle_search_text(update, context)
+        fake_update = Update(
+            update.update_id,
+            message=update.callback_query.message
+        )
+        await handle_search_text(fake_update, context)
         return
 
     elif data == "search_exit":
@@ -118,3 +122,4 @@ async def handle_searching_results_callback(update, context):
         await query.edit_message_reply_markup(reply_markup=keyboard)
         search_state.pop(chat_id, None)
         return
+    
