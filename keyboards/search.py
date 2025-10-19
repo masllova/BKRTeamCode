@@ -1,5 +1,6 @@
 from telegram import InlineKeyboardButton
 
-REQUEST_BUTON = InlineKeyboardButton("Отправить заявку", callback_data=f"request_{['id']}")
-SEARCH_MORE_BUTTON = InlineKeyboardButton("Показать ещё", callback_data="search_more")
-BACK_BUTTON = InlineKeyboardButton("Выйти в меню", callback_data="menu")
+SEARCH_RETRY_BUTTON = [InlineKeyboardButton("Новый поиск", callback_data="search_retry")]
+SEARCH_EXIT_BUTTON = [InlineKeyboardButton("Выйти в меню", callback_data="search_exit")]
+def request_button(chat_id):
+    return [InlineKeyboardButton("Отправить заявку", callback_data=f"request_{chat_id}")]

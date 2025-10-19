@@ -1,8 +1,8 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from db.queries_users import get_user_role, search_users
-from texts.search import SEARCH_STUDENT, SEARCH_TEACHER
-from keyboards.search import REQUEST_BUTON, SEARCH_MORE_BUTTON, BACK_BUTTON
+from texts.search import SEARCH_STUDENT, SEARCH_TEACHER, NOTHING_FOUND, SEARCH_FINISHED, CHOOSE_ACTION, format_user_profile
+from keyboards.search import SEARCH_RETRY_BUTTON, SEARCH_EXIT_BUTTON, request_button
 from keyboards.menu import get_menu_keyboard
 from db.queries_users import get_user_by_chat_id
 
@@ -28,36 +28,22 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
     users = search_users(query_text, target_role, last_id)
 
     if not users:
-        keyboard = InlineKeyboardMarkup([
-            [InlineKeyboardButton("Новый поиск", callback_data="search_retry")],
-            [InlineKeyboardButton("Выйти в меню", callback_data="search_exit")]
-        ])
-        await update.message.reply_text(
-            "😕 Ничего не найдено.\nПопробуйте уточнить запрос.",
-            reply_markup=keyboard
-        )
+        keyboard = InlineKeyboardMarkup([SEARCH_RETRY_BUTTON, SEARCH_EXIT_BUTTON])
+        await update.message.reply_text(NOTHING_FOUND, reply_markup=keyboard)
         return
     search_state[chat_id]["last_id"] = users[-1]["id"] if len(users) == 3 else None
 
     for u in users:
-        text_card = (
-            f"────────────────\n"
-            f"👤 {u['full_name']}\n"
-            f"🎓 Роль: {u['role']}\n"
-            f"🏛 Университет: {u['university'] or '-'}\n"
-            f"📚 Уровень: {u['stage'] or '-'}\n"
-            f"Факультет: {u['faculty'] or '-'}\n"
-            f"Кафедра: {u['department'] or '-'}\n"
-            f"Статьи: {u['articles'] or '-'}\n"
-            f"Интересы: {u['research_interests'] or '-'}\n"
-            f"────────────────"
+        text_card = format_user_profile(
+            full_name=u['full_name'],
+            stage=u['stage'],
+            university=u['university'],
+            faculty=u['faculty'],
+            department=u['department'],
+            articles=u['department'],
+            research_interests=u['research_interests']
         )
-        keyboard = InlineKeyboardMarkup([[
-            InlineKeyboardButton(
-                "Отправить заявку",
-                callback_data=f"request_{chat_id}"
-            )
-        ]])
+        keyboard = InlineKeyboardMarkup([request_button(chat_id)])
         await update.message.reply_text(text_card, reply_markup=keyboard)
 
     buttons = []
@@ -65,13 +51,10 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
     if search_state[chat_id]["last_id"]:
         buttons.append([SEARCH_MORE_BUTTON])
 
-    buttons.append([InlineKeyboardButton("Новый поиск", callback_data="search_retry")])
-    buttons.append([InlineKeyboardButton("Выйти в меню", callback_data="search_exit")])
+    buttons.append(SEARCH_RETRY_BUTTON)
+    buttons.append(SEARCH_EXIT_BUTTON)
 
-    await update.message.reply_text(
-        "Выберите действие:",
-        reply_markup=InlineKeyboardMarkup(buttons)
-    )
+    await update.message.reply_text(CHOOSE_ACTION, reply_markup=InlineKeyboardMarkup(buttons))
 
 async def handle_search_callback(update, context):
     query = update.callback_query
@@ -84,7 +67,7 @@ async def handle_search_callback(update, context):
 
     if data == "search_exit":
         keyboard = get_menu_keyboard(user["role"])
-        await query.message.reply_text("Поиск завершён.\nВыберите нужный раздел из меню:", reply_markup=keyboard)
+        await query.message.reply_text(SEARCH_FINISHED, reply_markup=keyboard)
         search_state.pop(chat_id, None)
         return
     elif data.startswith("request_"):

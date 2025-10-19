@@ -4,6 +4,7 @@ from keyboards.menu import STUDENT_MENU_BUTTONS, TEACHER_MENU_BUTTONS
 from handlers.options.registration import handle_registration_text, user_state
 from handlers.options.menu import handle_menu_text
 from handlers.options.search import handle_search_text, search_state
+from texts.options import UNKNOWN_COMMAND
 
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
@@ -23,4 +24,4 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     # Если ничего не подошло
-    await update.message.reply_text("❗ Неизвестная команда. Пожалуйста, используйте кнопки меню.")
+    await update.message.reply_text(UNKNOWN_COMMAND)
