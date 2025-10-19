@@ -106,6 +106,8 @@ async def handle_searching_results_callback(update, context):
     data = query.data
     user = get_user_by_chat_id(chat_id)
 
+    print(data)
+
     if data.startswith("request_"):
         target_id = int(data.split("_")[1])
         # to do: логика отправки заявки
