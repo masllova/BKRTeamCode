@@ -12,12 +12,11 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
     chat_id = update.message.chat_id
     text = update.message.text.strip()
 
-    if search_state.get(chat_id, {}).get("state") != "searching_results":
+    if not search_state.get(chat_id):
         user_role = get_user_role(chat_id)
         target_role = "teacher" if user_role == "student" else "student"
 
         search_state[chat_id] = {
-            "state": "searching_results",
             "query": text,
             "last_id": None,
             "target_role": target_role
@@ -64,14 +63,12 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
     buttons.append([InlineKeyboardButton("Новый поиск", callback_data="search_retry")])
     buttons.append([InlineKeyboardButton("Выйти в меню", callback_data="search_exit")])
 
-    search_state[chat_id]["state"] = "awaiting_search_query"
-
     await update.message.reply_text(
         "Выберите действие:",
         reply_markup=InlineKeyboardMarkup(buttons)
     )
 
-async def handle_search_query_callback(update, context):
+async def handle_search_callback(update, context):
     query = update.callback_query
     await query.answer()
     chat_id = query.message.chat.id
@@ -82,7 +79,7 @@ async def handle_search_query_callback(update, context):
 
     if data == "search_exit":
         keyboard = get_menu_keyboard(user["role"])
-        await query.edit_message_reply_markup(reply_markup=keyboard)
+        await query.message.reply_text("Поиск завершён.\nВыберите нужный раздел из меню:", reply_markup=keyboard)
         search_state.pop(chat_id, None)
         return
     elif data.startswith("request_"):
@@ -98,26 +95,10 @@ async def handle_search_query_callback(update, context):
             await query.message.reply_text(SEARCH_TEACHER)
 
         search_state[chat_id] = {
-            "state": "awaiting_search_query",
             "query": None,
             "last_id": None,
             "target_role": None
         }
-        return
-
-async def handle_searching_results_callback(update, context):
-    query = update.callback_query
-    await query.answer()
-    chat_id = query.message.chat.id
-    data = query.data
-    user = get_user_by_chat_id(chat_id)
-
-    print(data)
-
-    if data.startswith("request_"):
-        target_id = int(data.split("_")[1])
-        # to do: логика отправки заявки
-        print("Заявка отправлена", target_id)
         return
     elif data == "search_more":
         fake_update = Update(
@@ -126,9 +107,3 @@ async def handle_searching_results_callback(update, context):
         )
         await handle_search_text(fake_update, context)
         return
-    elif data == "search_exit":
-        keyboard = get_menu_keyboard(user["role"])
-        await query.edit_message_reply_markup(reply_markup=keyboard)
-        search_state.pop(chat_id, None)
-        return
-    

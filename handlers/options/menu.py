@@ -23,6 +23,9 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
     command = BUTTON_TO_COMMAND.get(text, "unknown")
 
+    chat_id = update.message.chat_id
+    search_state.pop(chat_id, None)
+
     if command == "search":
         await open_search(update)
         return
@@ -33,7 +36,6 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def open_search(update: Update):
     chat_id = update.message.chat_id
     search_state[chat_id] = {
-        "state": "awaiting_search_query",
         "query": None,
         "last_id": None,
         "target_role": None
