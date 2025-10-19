@@ -34,7 +34,7 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
     search_state[chat_id]["last_id"] = users[-1]["id"] if len(users) == 3 else None
 
     for u in users:
-        print('u')
+        print(u)
         text_card = format_user_profile(
             full_name=u['full_name'],
             stage=u['stage'],
