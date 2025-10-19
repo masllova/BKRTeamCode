@@ -2,7 +2,8 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from keyboards.menu import BUTTON_TO_COMMAND, get_menu_keyboard
 from db.queries_users import user_exists, get_user_role
-from texts.menu import MENU_AVAILABLE, NOT_REGISTERED, MENU_RESPONSES, ENTER_SEARCH_QUERY
+from texts.menu import MENU_AVAILABLE, NOT_REGISTERED, MENU_RESPONSES
+from texts.search import SEARCH_STUDENT, SEARCH_TEACHER
 from handlers.options.search import search_state
 
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -40,5 +41,10 @@ async def open_search(update: Update):
         "last_id": None,
         "target_role": None
     }
-    await update.message.reply_text(ENTER_SEARCH_QUERY)
+
+    role = get_user_role(chat_id)
+    if role == "student":
+        await update.message.reply_text(SEARCH_STUDENT)
+    else:
+        await update.message.reply_text(SEARCH_TEACHER)
     return
