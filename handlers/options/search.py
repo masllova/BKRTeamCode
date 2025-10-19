@@ -30,8 +30,8 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     if not users:
         keyboard = InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔎 Новый поиск", callback_data="search_retry")],
-            [InlineKeyboardButton("🏠 Выйти в меню", callback_data="search_exit")]
+            [InlineKeyboardButton("Новый поиск", callback_data="search_retry")],
+            [InlineKeyboardButton("Выйти в меню", callback_data="search_exit")]
         ])
         await update.message.reply_text(
             "😕 Ничего не найдено.\nПопробуйте уточнить запрос.",
@@ -76,6 +76,8 @@ async def handle_search_query_callback(update, context):
     data = query.data
     user = get_user_by_chat_id(chat_id)
 
+    print(data)
+
     if data == "search_exit":
         keyboard = get_menu_keyboard(user["role"])
         await query.edit_message_reply_markup(reply_markup=keyboard)
@@ -88,6 +90,7 @@ async def handle_search_query_callback(update, context):
             await query.message.reply_text(SEARCH_STUDENT)
         else:
             await query.message.reply_text(SEARCH_TEACHER)
+
         search_state[chat_id] = {
             "state": "awaiting_search_query",
             "query": None,

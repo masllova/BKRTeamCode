@@ -22,6 +22,8 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     state_info = search_state.get(chat_id, {})
     state = state_info.get("state")
 
+    print(state)
+
     if state == "awaiting_search_query":
         await handle_search_query_callback(update, context)
         return
