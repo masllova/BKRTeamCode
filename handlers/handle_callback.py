@@ -19,8 +19,6 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.reply_text("❗ Пожалуйста, пройдите регистрацию с начала: /start")
         return
 
-    search_state_info = search_state.get(chat_id, {})
-
-    if search_state_info:
+    if search_state.get(chat_id):
         await handle_search_callback(update, context)
         return

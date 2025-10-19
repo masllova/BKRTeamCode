@@ -13,7 +13,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await handle_registration_text(update, context)
         return
 
-    if search_state.get(chat_id, {}).get("state") == "awaiting_search_query":
+    if search_state.get(chat_id):
         await handle_search_text(update, context)
         return
 
