@@ -44,7 +44,7 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
             articles=u['department'],
             research_interests=u['research_interests']
         )
-        keyboard = InlineKeyboardMarkup([request_button(chat_id)])
+        keyboard = InlineKeyboardMarkup([request_button(u['chat_id'])])
         await update.message.reply_text(text_card, reply_markup=keyboard)
 
     buttons = []
