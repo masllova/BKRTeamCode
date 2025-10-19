@@ -34,9 +34,9 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
     search_state[chat_id]["last_id"] = users[-1]["id"] if len(users) == 3 else None
 
     for u in users:
-        print(u)
         text_card = format_user_profile(
             full_name=u['full_name'],
+            role=u['role'],
             stage=u['stage'],
             university=u['university'],
             faculty=u['faculty'],
@@ -63,8 +63,6 @@ async def handle_search_callback(update, context):
     chat_id = query.message.chat.id
     data = query.data
     user = get_user_by_chat_id(chat_id)
-
-    print(data)
 
     if data == "search_exit":
         keyboard = get_menu_keyboard(user["role"])
