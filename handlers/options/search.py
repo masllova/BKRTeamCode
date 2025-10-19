@@ -12,9 +12,7 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
     chat_id = update.message.chat_id
     text = update.message.text.strip()
 
-    print(search_state.get(chat_id))
-
-    if not search_state.get(chat_id):
+    if all(v is None for v in search_state.get(chat_id).values()):
         user_role = get_user_role(chat_id)
         target_role = "teacher" if user_role == "student" else "student"
 
