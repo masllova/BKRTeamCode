@@ -4,7 +4,7 @@ from db.queries_requests import get_incoming_requests, get_outgoing_requests
 
 requests_state = {}
 
-async def handle_registration_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     chat_id = query.message.chat.id
