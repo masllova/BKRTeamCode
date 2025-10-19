@@ -10,9 +10,7 @@ def add_request(sender_id: int, receiver_id: int, topic: str):
         """,
         (sender_id, receiver_id, topic, datetime.utcnow())
     )
-    request_id = cursor.fetchone()[0]
     conn.commit()
-    return request_id
 
 def get_incoming_requests(user_id: int, last_id: int | None = None) -> list[dict] | None:
     sql = """

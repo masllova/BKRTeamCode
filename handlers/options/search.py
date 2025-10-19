@@ -1,6 +1,7 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from db.queries_users import get_user_role, search_users
+from db.queries_requests import add_request
 from texts.search import SEARCH_STUDENT, SEARCH_TEACHER, NOTHING_FOUND, SEARCH_FINISHED, CHOOSE_ACTION, format_user_profile
 from keyboards.search import SEARCH_RETRY_BUTTON, SEARCH_EXIT_BUTTON, SEARCH_MORE_BUTTON, request_button
 from keyboards.menu import get_menu_keyboard
@@ -27,6 +28,8 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
         target_id = int(target_id_str)
 
         try:
+            add_request(sender_id=chat_id, receiver_id=target_id, topic=text)
+
             await context.bot.send_message(
                 chat_id=target_id,
                 text=(
@@ -37,13 +40,17 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
                 )
             )
             keyboard = get_menu_keyboard(get_user_role(chat_id))
-            await update.message.reply_text("Всё готово! Ваша заявка успешно отправлена.", reply_markup=keyboard)
+            await update.message.reply_text(
+                "Всё готово! Ваша заявка успешно отправлена.", 
+                reply_markup=keyboard
+            )
             search_state.pop(chat_id, None)
 
         except Exception:
-            await update.message.reply_text("⚠ Не удалось отправить уведомление пользователю. Попробуйте позже.")
+            await update.message.reply_text(
+                "⚠ Не удалось создать заявку или отправить уведомление. Попробуйте позже."
+            )
         return
-    
 
     query_text = search_state[chat_id]["query"]
     last_id = search_state[chat_id]["last_id"]
