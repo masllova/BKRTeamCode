@@ -27,6 +27,7 @@ def format_user_profile(
             parts += f"📚 Ступень образования: {stage.strip()}\n"
         else:
             parts += f"📚 Научная/Преподавательская должность: {stage.strip()}\n"
+    if faculty and faculty.strip():
         parts += f"Факультет: {faculty.strip()}\n"
     if department and department.strip():
         parts += f"Кафедра: {department.strip()}\n"
@@ -34,5 +35,4 @@ def format_user_profile(
         parts += f"Статьи: {articles.strip()}\n"
     if research_interests and research_interests.strip():
         parts += f"Интересы: {research_interests.strip()}\n"
-
     return parts
