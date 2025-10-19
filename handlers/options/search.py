@@ -22,10 +22,11 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
             "target_role": target_role
         }
     elif search_state.get(chat_id, {}).get("query", "").startswith("awaiting_topic_for_request_"):
-        target_id_str = search_state["query"].replace("awaiting_topic_for_request_", "")
-        try:
-            target_id = int(target_id_str)
+        state_info = search_state[chat_id] 
+        target_id_str = state_info["query"].replace("awaiting_topic_for_request_", "")
+        target_id = int(target_id_str)
 
+        try:
             await context.bot.send_message(
                 chat_id=target_id,
                 text=(
