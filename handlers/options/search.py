@@ -52,7 +52,12 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
             f"Интересы: {u['research_interests'] or '-'}\n"
             f"────────────────"
         )
-        keyboard = InlineKeyboardMarkup([[REQUEST_BUTON]])
+        keyboard = InlineKeyboardMarkup([[
+            InlineKeyboardButton(
+                "Отправить заявку",
+                callback_data=f"request_{chat_id}"
+            )
+        ]])
         await update.message.reply_text(text_card, reply_markup=keyboard)
 
     buttons = []
