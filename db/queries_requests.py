@@ -12,20 +12,14 @@ def add_request(sender_id: int, receiver_id: int, topic: str):
     )
     conn.commit()
 
-def get_incoming_requests(user_id: int, last_id: int | None = None) -> list[dict] | None:
+def get_incoming_requests(user_id: int) -> list[dict] | None:
     sql = """
         SELECT id, sender_id, topic, status, created_at
         FROM requests
         WHERE receiver_id = %s
+        ORDER BY created_at ASC;
     """
-    params = [user_id]
-
-    if last_id:
-        sql += " AND id > %s"
-        params.append(last_id)
-
-    sql += " ORDER BY id LIMIT 3;"
-    cursor.execute(sql, tuple(params))
+    cursor.execute(sql, (user_id,))
     results = cursor.fetchall()
 
     if not results:
@@ -42,20 +36,14 @@ def get_incoming_requests(user_id: int, last_id: int | None = None) -> list[dict
         })
     return requests
 
-def get_outgoing_requests(user_id: int, last_id: int | None = None) -> list[dict] | None:
+def get_outgoing_requests(user_id: int) -> list[dict] | None:
     sql = """
         SELECT id, receiver_id, topic, status, created_at
         FROM requests
         WHERE sender_id = %s
+        ORDER BY created_at ASC;
     """
-    params = [user_id]
-
-    if last_id:
-        sql += " AND id > %s"
-        params.append(last_id)
-
-    sql += " ORDER BY id LIMIT 3;"
-    cursor.execute(sql, tuple(params))
+    cursor.execute(sql, (user_id,))
     results = cursor.fetchall()
 
     if not results:
