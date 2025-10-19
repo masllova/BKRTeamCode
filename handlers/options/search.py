@@ -64,6 +64,8 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
     buttons.append([InlineKeyboardButton("Новый поиск", callback_data="search_retry")])
     buttons.append([InlineKeyboardButton("Выйти в меню", callback_data="search_exit")])
 
+    search_state[chat_id]["state"] = "awaiting_search_query"
+
     await update.message.reply_text(
         "Выберите действие:",
         reply_markup=InlineKeyboardMarkup(buttons)
@@ -83,7 +85,11 @@ async def handle_search_query_callback(update, context):
         await query.edit_message_reply_markup(reply_markup=keyboard)
         search_state.pop(chat_id, None)
         return
-
+    elif data.startswith("request_"):
+        target_id = int(data.split("_")[1])
+        # to do: логика отправки заявки
+        print("Заявка отправлена", target_id)
+        return
     elif data == "search_retry":
         role = get_user_role(chat_id)
         if role == "student":
@@ -113,7 +119,6 @@ async def handle_searching_results_callback(update, context):
         # to do: логика отправки заявки
         print("Заявка отправлена", target_id)
         return
-
     elif data == "search_more":
         fake_update = Update(
             update.update_id,
@@ -121,7 +126,6 @@ async def handle_searching_results_callback(update, context):
         )
         await handle_search_text(fake_update, context)
         return
-
     elif data == "search_exit":
         keyboard = get_menu_keyboard(user["role"])
         await query.edit_message_reply_markup(reply_markup=keyboard)
