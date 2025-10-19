@@ -77,9 +77,9 @@ async def handle_search_callback(update, context):
     elif data == "search_retry":
         role = get_user_role(chat_id)
         if role == "student":
-            await query.message.reply_text(SEARCH_STUDENT)
-        else:
             await query.message.reply_text(SEARCH_TEACHER)
+        else:
+            await query.message.reply_text(SEARCH_STUDENT)
 
         search_state[chat_id] = {
             "query": None,

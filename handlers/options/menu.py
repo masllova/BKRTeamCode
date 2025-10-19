@@ -44,7 +44,7 @@ async def open_search(update: Update):
 
     role = get_user_role(chat_id)
     if role == "student":
-        await update.message.reply_text(SEARCH_STUDENT)
-    else:
         await update.message.reply_text(SEARCH_TEACHER)
+    else:
+        await update.message.reply_text(SEARCH_STUDENT)
     return
