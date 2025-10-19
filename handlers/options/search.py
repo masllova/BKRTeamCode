@@ -72,6 +72,7 @@ async def handle_search_callback(update, context):
     elif data.startswith("request_"):
         target_id = int(data.split("_")[1])
         
+        print('target', target_id, 'chat', chat_id)
         try:
             await context.bot.send_message(
                 chat_id=target_id,
