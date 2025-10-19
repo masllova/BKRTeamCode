@@ -71,8 +71,20 @@ async def handle_search_callback(update, context):
         return
     elif data.startswith("request_"):
         target_id = int(data.split("_")[1])
-        # to do: логика отправки заявки
-        print("Заявка отправлена", target_id)
+        
+        try:
+            await context.bot.send_message(
+                chat_id=target_id,
+                text=(
+                    "📩 Вы получили новую заявку.\n"
+                    "Чтобы просмотреть её, введите команду /view_requests.\n"
+                    "Вы сможете ознакомиться с заявками в любое удобное время через меню."
+                )
+            )
+        except Exception:
+            await update.callback_query.message.reply_text(
+                "⚠ Не удалось отправить уведомление пользователю. Попробуйте позже."
+            )
         return
     elif data == "search_retry":
         role = get_user_role(chat_id)
