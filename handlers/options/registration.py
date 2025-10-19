@@ -22,6 +22,8 @@ async def handle_registration_text(update: Update, context: ContextTypes.DEFAULT
     text = update.message.text.strip()
     state = user_state.get(chat_id)
 
+    print(state, 'from handle_registration_text')
+
     if state == "awaiting_name":
         user_data_temp[chat_id] = {"full_name": text}
         user_state[chat_id] = "awaiting_role"
@@ -48,6 +50,8 @@ async def handle_registration_callback(update: Update, context: ContextTypes.DEF
     chat_id = query.message.chat_id
     data = query.data
     state = user_state.get(chat_id)
+
+    print(state, 'from handle_registration_callback')
 
     if state == "awaiting_role":
         user_data_temp[chat_id]["role"] = data
