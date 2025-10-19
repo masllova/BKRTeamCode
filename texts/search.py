@@ -1,3 +1,5 @@
+from texts.stage import TEACHER_STAGE_NAMES, STUDENT_STAGE_NAMES
+
 SEARCH_TEACHER = "Введите ФИО или ключевые слова для поиска научного руководителя."
 SEARCH_STUDENT = "Введите ФИО или ключевые слова для поиска студента."
 NOTHING_FOUND = "Ничего не найдено.\nПопробуйте уточнить запрос."
@@ -18,15 +20,16 @@ def format_user_profile(
 
     if full_name and full_name.strip():
         parts += f"👤 {full_name.strip()}\n"
-    if role and role.strip():
-        parts += f"🎓 Роль: {role.strip()}\n"
     if university and university.strip():
         parts += f"🏛 Университет: {university.strip()}\n"
     if stage and stage.strip():
+        stage_key = stage.strip()
         if role and role.strip().lower() == "student":
-            parts += f"📚 Ступень образования: {stage.strip()}\n"
+            stage_name = STUDENT_STAGE_NAMES.get(stage_key, stage_key)
+            parts += f"📚 Ступень образования: {stage_name}\n"
         else:
-            parts += f"📚 Научная/Преподавательская должность: {stage.strip()}\n"
+            stage_name = TEACHER_STAGE_NAMES.get(stage_key, stage_key)
+            parts += f"📚 Научная/Преподавательская должность: {stage_name}\n"
     if faculty and faculty.strip():
         parts += f"Факультет: {faculty.strip()}\n"
     if department and department.strip():
