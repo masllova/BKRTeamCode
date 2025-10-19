@@ -4,7 +4,7 @@ from db.queries_users import get_user_role, search_users
 from texts.search import SEARCH_STUDENT, SEARCH_TEACHER, NOTHING_FOUND, SEARCH_FINISHED, CHOOSE_ACTION, format_user_profile
 from keyboards.search import SEARCH_RETRY_BUTTON, SEARCH_EXIT_BUTTON, SEARCH_MORE_BUTTON, request_button
 from keyboards.menu import get_menu_keyboard
-from db.queries_users import get_user_by_chat_id
+from db.queries_users import get_user_by_chat_id, get_user_role
 
 search_state: dict[int, dict] = {}
 
@@ -21,6 +21,28 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
             "last_id": None,
             "target_role": target_role
         }
+    elif search_state.get(chat_id, {}).get("query", "").startswith("awaiting_topic_for_request_"):
+        target_id_str = search_state["query"].replace("awaiting_topic_for_request_", "")
+        try:
+            target_id = int(target_id_str)
+
+            await context.bot.send_message(
+                chat_id=target_id,
+                text=(
+                    f"📩 Вы получили новую заявку.\n"
+                    f"Тема проекта: {text}\n"
+                    "Чтобы просмотреть заявки, введите команду /view_requests.\n"
+                    "Вы сможете ознакомиться с заявками в любое удобное время через меню."
+                )
+            )
+            keyboard = get_menu_keyboard(get_user_role(chat_id))
+            await update.message.reply_text(SEARCH_FINISHED, reply_markup=keyboard)
+            search_state.pop(chat_id, None)
+
+        except Exception:
+            await update.message.reply_text("⚠ Не удалось отправить уведомление пользователю. Попробуйте позже.")
+        return
+    
 
     query_text = search_state[chat_id]["query"]
     last_id = search_state[chat_id]["last_id"]
@@ -62,33 +84,30 @@ async def handle_search_callback(update, context):
     await query.answer()
     chat_id = query.message.chat.id
     data = query.data
-    user = get_user_by_chat_id(chat_id)
 
     if data == "search_exit":
-        keyboard = get_menu_keyboard(user["role"])
+        role = get_user_role(chat_id)
+        keyboard = get_menu_keyboard(role)
         await query.message.reply_text(SEARCH_FINISHED, reply_markup=keyboard)
         search_state.pop(chat_id, None)
         return
     elif data.startswith("request_"):
         target_id = int(data.split("_")[1])
-        
-        print('target', target_id, 'chat', chat_id)
-        try:
-            await context.bot.send_message(
-                chat_id=target_id,
-                text=(
-                    "📩 Вы получили новую заявку.\n"
-                    "Чтобы просмотреть её, введите команду /view_requests.\n"
-                    "Вы сможете ознакомиться с заявками в любое удобное время через меню."
-                )
-            )
-        except Exception:
-            await update.callback_query.message.reply_text(
-                "⚠ Не удалось отправить уведомление пользователю. Попробуйте позже."
-            )
+        target_user = get_user_by_chat_id(target_id)
+
+        search_state[chat_id] = {
+            "query": f"awaiting_topic_for_request_{target_id}",
+            "last_id": None,
+            "target_role": None
+        }
+        await query.message.reply_text(
+            f"Пожалуйста, введите название темы для совместного проекта.\n"
+            f"Её будет видно в заявке для {target_user['full_name']}"
+        )
         return
     elif data == "search_retry":
         role = get_user_role(chat_id)
+
         if role == "student":
             await query.message.reply_text(SEARCH_TEACHER)
         else:
@@ -101,9 +120,6 @@ async def handle_search_callback(update, context):
         }
         return
     elif data == "search_more":
-        fake_update = Update(
-            update.update_id,
-            message=update.callback_query.message
-        )
+        fake_update = Update(update.update_id, message=update.callback_query.message)
         await handle_search_text(fake_update, context)
         return
