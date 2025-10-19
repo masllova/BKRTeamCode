@@ -37,7 +37,7 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
                 )
             )
             keyboard = get_menu_keyboard(get_user_role(chat_id))
-            await update.message.reply_text(SEARCH_FINISHED, reply_markup=keyboard)
+            await update.message.reply_text("Всё готово! Ваша заявка успешно отправлена.", reply_markup=keyboard)
             search_state.pop(chat_id, None)
 
         except Exception:
