@@ -28,6 +28,8 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
         target_id_str = state_info["query"].replace("awaiting_topic_for_request_", "")
         target_id = int(target_id_str)
 
+        print(target_id_str, target_id)
+
         try:
             add_request(sender_id=chat_id, receiver_id=target_id, topic=text)
 
