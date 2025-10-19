@@ -13,7 +13,8 @@ async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT
     if data == "incoming_requests":
         requests = get_incoming_requests(chat_id)
         if not requests:
-            await query.message.reply_text("😔 У вас нет входящих заявок.")
+            await query.message.reply_text("У вас нет входящих заявок.")
+            # тут расширение ввода профиля
             return
 
         text = "📩 Входящие заявки:\n\n"
@@ -26,7 +27,7 @@ async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT
     elif data == "outgoing_requests":
         requests = get_outgoing_requests(chat_id)
         if not requests:
-            await query.message.reply_text("😔 У вас нет отправленных заявок.")
+            await query.message.reply_text("У вас нет отправленных заявок.")
             return
 
         text = "📤 Отправленные заявки:\n\n"

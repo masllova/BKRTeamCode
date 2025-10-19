@@ -1,3 +1,4 @@
+import traceback
 from telegram import Update, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from db.queries_users import get_user_role, search_users
@@ -46,7 +47,12 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
             )
             search_state.pop(chat_id, None)
 
-        except Exception:
+        except Exception as e:
+            # Печатаем полную информацию об ошибке в консоль
+            print("Ошибка при создании заявки или отправке сообщения:")
+            traceback.print_exc()
+            
+            # Сообщение пользователю
             await update.message.reply_text(
                 "⚠ Не удалось создать заявку или отправить уведомление. Попробуйте позже."
             )
