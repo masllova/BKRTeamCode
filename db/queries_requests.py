@@ -94,7 +94,7 @@ def respond_request(request_id: int):
     with conn.cursor() as cursor:
         cursor.execute("DELETE FROM requests WHERE id = %s;", (request_id,))
         conn.commit()
-        print(f"🗑️ Заявка {request_id} удалена.")
+        print(f"Заявка {request_id} удалена.")
 
 
 def request_exists(sender_telegram_id: int, receiver_telegram_id: int) -> bool:
@@ -116,3 +116,14 @@ def request_exists(sender_telegram_id: int, receiver_telegram_id: int) -> bool:
             (sender_id, receiver_id)
         )
         return cursor.fetchone() is not None
+    
+def get_request_users(request_id: int) -> tuple[int, int]:
+    with conn.cursor() as cursor:
+        cursor.execute(
+            "SELECT sender_id, receiver_id FROM requests WHERE id = %s;",
+            (request_id,)
+        )
+        result = cursor.fetchone()
+        if not result:
+            raise ValueError(f"Заявка с id {request_id} не найдена")
+        return result[0], result[1]
