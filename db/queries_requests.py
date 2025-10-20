@@ -27,58 +27,80 @@ def add_request(sender_telegram_id: int, receiver_telegram_id: int, topic: str):
         conn.commit()
         print(f"✔️ Заявка создана, id: {request_id}")
 
-def get_incoming_requests(user_id: int) -> list[dict] | None:
-    sql = """
-        SELECT id, sender_id, topic, status, created_at
-        FROM requests
-        WHERE receiver_id = %s
-        ORDER BY created_at ASC;
-    """
-    cursor.execute(sql, (user_id,))
-    results = cursor.fetchall()
+def get_incoming_requests(user_telegram_id: int) -> list[dict] | None:
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT id FROM users WHERE telegram_id = %s", (user_telegram_id,))
+        user = cursor.fetchone()
 
-    if not results:
-        return None
+        if not user:
+            return None
+        user_id = user[0]
 
-    requests = []
-    for r in results:
-        requests.append({
-            "id": r[0],
-            "sender_id": r[1],
-            "topic": r[2],
-            "status": r[3],
-            "created_at": r[4],
-        })
-    return requests
+        sql = """
+            SELECT r.id, r.sender_id, u.full_name AS sender_name, r.topic, r.status, r.created_at
+            FROM requests r
+            JOIN users u ON r.sender_id = u.id
+            WHERE r.receiver_id = %s
+            ORDER BY r.created_at ASC;
+        """
+        cursor.execute(sql, (user_id,))
+        results = cursor.fetchall()
+        if not results:
+            return None
 
-def get_outgoing_requests(user_id: int) -> list[dict] | None:
-    sql = """
-        SELECT id, receiver_id, topic, status, created_at
-        FROM requests
-        WHERE sender_id = %s
-        ORDER BY created_at ASC;
-    """
-    cursor.execute(sql, (user_id,))
-    results = cursor.fetchall()
+        requests = []
+        for r in results:
+            requests.append({
+                "id": r[0],
+                "sender_id": r[1],
+                "sender_name": r[2],
+                "topic": r[3],
+                "status": r[4],
+                "created_at": r[5],
+            })
+        return requests
 
-    if not results:
-        return None
 
-    requests = []
-    for r in results:
-        requests.append({
-            "id": r[0],
-            "receiver_id": r[1],
-            "topic": r[2],
-            "status": r[3],
-            "created_at": r[4],
-        })
-    return requests
+def get_outgoing_requests(user_telegram_id: int) -> list[dict] | None:
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT id FROM users WHERE telegram_id = %s", (user_telegram_id,))
+        user = cursor.fetchone()
+        
+        if not user:
+            return None
+        user_id = user[0]
+
+        sql = """
+            SELECT r.id, r.receiver_id, u.full_name AS receiver_name, r.topic, r.status, r.created_at
+            FROM requests r
+            JOIN users u ON r.receiver_id = u.id
+            WHERE r.sender_id = %s
+            ORDER BY r.created_at ASC;
+        """
+        cursor.execute(sql, (user_id,))
+        results = cursor.fetchall()
+        if not results:
+            return None
+
+        requests = []
+        for r in results:
+            requests.append({
+                "id": r[0],
+                "receiver_id": r[1],
+                "receiver_name": r[2],
+                "topic": r[3],
+                "status": r[4],
+                "created_at": r[5],
+            })
+        return requests
+
 
 def respond_request(request_id: int, accept: bool):
     status = "принято" if accept else "отклонено"
-    cursor.execute(
-        "UPDATE requests SET status = %s WHERE id = %s;",
-        (status, request_id)
-    )
-    conn.commit()
+    with conn.cursor() as cursor:
+        cursor.execute(
+            "UPDATE requests SET status = %s WHERE id = %s;",
+            (status, request_id)
+        )
+        conn.commit()
+        print(f"✔️ Заявка {request_id} обновлена: {status}")
