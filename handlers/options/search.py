@@ -2,7 +2,7 @@ import traceback
 from telegram import Update, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from db.queries_users import get_user_role, search_users
-from db.queries_requests import add_request
+from db.queries_requests import add_request, request_exists
 from texts.search import SEARCH_STUDENT, SEARCH_TEACHER, NOTHING_FOUND, SEARCH_FINISHED, CHOOSE_ACTION, format_user_profile
 from keyboards.search import SEARCH_RETRY_BUTTON, SEARCH_EXIT_BUTTON, SEARCH_MORE_BUTTON, request_button
 from keyboards.menu import get_menu_keyboard
@@ -80,6 +80,11 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
             articles=u['department'],
             research_interests=u['research_interests']
         )
+        # if not request_exists(chat_id, u['telegram_id']):
+        #     keyboard = InlineKeyboardMarkup([request_button(u['telegram_id'])])
+        #     await update.message.reply_text(text_card, reply_markup=keyboard)
+        # else:
+        #     await update.message.reply_text(text_card)
         keyboard = InlineKeyboardMarkup([request_button(u['telegram_id'])])
         await update.message.reply_text(text_card, reply_markup=keyboard)
 
@@ -116,7 +121,8 @@ async def handle_search_callback(update, context):
         }
         await query.message.reply_text(
             f"Пожалуйста, введите название темы для совместного проекта.\n"
-            f"Её будет видно в заявке для {target_user['full_name']}"
+            f"Её будет видно в заявке для {target_user['full_name']}",
+            reply_markup=InlineKeyboardMarkup([SEARCH_EXIT_BUTTON])
         )
         return
     elif data == "search_retry":
