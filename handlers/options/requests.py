@@ -19,7 +19,7 @@ async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT
 
         text = "📩 Входящие заявки:\n\n"
         for r in requests:
-            text += f"- Тема: {r['topic']}\n  От пользователя ID: {r['sender_id']}\n\n"
+            text += f"- Тема: {r['topic']}\n  От пользователя {r['sender_name']}\n\n"
 
         await query.message.reply_text(text)
         return
