@@ -52,14 +52,8 @@ async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT
             ])
             await query.message.reply_text(request_text, reply_markup=keyboard)
         return
-
-async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    data = query.data
-    request_id = int(data.split("_")[-1])
-
-    if data.startswith("accept_request_"):
+    elif data.startswith("accept_request_"):
+        request_id = int(data.split("_")[-1])
         sender_id, receiver_id = get_request_users(request_id)
         sender_info = get_user_by_chat_id(sender_id)
         receiver_info = get_user_by_chat_id(receiver_id)
@@ -77,6 +71,7 @@ async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT
                  f"Найдите его в разделе /projects."
         )
     elif data.startswith("decline_request_"):
+        request_id = int(data.split("_")[-1])
         sender_id, receiver_id = get_request_users(request_id)
         sender_info = get_user_by_chat_id(sender_id)
         receiver_info = get_user_by_chat_id(receiver_id)
@@ -92,12 +87,13 @@ async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT
             chat_id=sender_info["telegram_id"],
             text="Заявка успешно отклонена."
         )
-
     elif data.startswith("delete_request_"):
+        request_id = int(data.split("_")[-1])
         respond_request(request_id)
         await query.message.reply_text("Заявка удалена. Можете найти нового кандидата для проекта.")
 
     elif data.startswith("remind_request_"):
+        request_id = int(data.split("_")[-1])
         sender_id, receiver_id = get_request_users(request_id)
         sender_info = get_user_by_chat_id(sender_id)
         receiver_info = get_user_by_chat_id(receiver_id)
