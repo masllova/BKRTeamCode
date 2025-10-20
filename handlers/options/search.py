@@ -85,6 +85,7 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
             keyboard = InlineKeyboardMarkup([request_button(target_id)])
             await update.message.reply_text(text_card, reply_markup=keyboard)
         else:
+            text_card += "\n ❗️ Заявка уже отправлена"
             await update.message.reply_text(text_card)
 
     buttons = []
