@@ -80,13 +80,12 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
             articles=u['department'],
             research_interests=u['research_interests']
         )
-        # if not request_exists(chat_id, u['telegram_id']):
-        #     keyboard = InlineKeyboardMarkup([request_button(u['telegram_id'])])
-        #     await update.message.reply_text(text_card, reply_markup=keyboard)
-        # else:
-        #     await update.message.reply_text(text_card)
-        keyboard = InlineKeyboardMarkup([request_button(u['telegram_id'])])
-        await update.message.reply_text(text_card, reply_markup=keyboard)
+        target_id = u['telegram_id']
+        if not request_exists(chat_id, target_id):
+            keyboard = InlineKeyboardMarkup([request_button(target_id)])
+            await update.message.reply_text(text_card, reply_markup=keyboard)
+        else:
+            await update.message.reply_text(text_card)
 
     buttons = []
 
@@ -121,8 +120,7 @@ async def handle_search_callback(update, context):
         }
         await query.message.reply_text(
             f"Пожалуйста, введите название темы для совместного проекта.\n"
-            f"Её будет видно в заявке для {target_user['full_name']}",
-            reply_markup=InlineKeyboardMarkup([SEARCH_EXIT_BUTTON])
+            f"Её будет видно в заявке для {target_user['full_name']}"
         )
         return
     elif data == "search_retry":
