@@ -1,7 +1,7 @@
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes
 from db.queries_requests import get_incoming_requests, get_outgoing_requests, respond_request, get_request_users
-from db.queries_users import get_user_by_chat_id
+from db.queries_users import get_user_by_id
 
 requests_state = {}
 
@@ -55,8 +55,8 @@ async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT
     elif data.startswith("accept_request_"):
         request_id = int(data.split("_")[-1])
         sender_id, receiver_id = get_request_users(request_id)
-        sender_info = get_user_by_chat_id(sender_id)
-        receiver_info = get_user_by_chat_id(receiver_id)
+        sender_info = get_user_by_id(sender_id)
+        receiver_info = get_user_by_id(receiver_id)
 
         respond_request(request_id)
 
@@ -73,8 +73,8 @@ async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT
     elif data.startswith("decline_request_"):
         request_id = int(data.split("_")[-1])
         sender_id, receiver_id = get_request_users(request_id)
-        sender_info = get_user_by_chat_id(sender_id)
-        receiver_info = get_user_by_chat_id(receiver_id)
+        sender_info = get_user_by_id(sender_id)
+        receiver_info = get_user_by_id(receiver_id)
 
         respond_request(request_id)
 
@@ -95,8 +95,8 @@ async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT
     elif data.startswith("remind_request_"):
         request_id = int(data.split("_")[-1])
         sender_id, receiver_id = get_request_users(request_id)
-        sender_info = get_user_by_chat_id(sender_id)
-        receiver_info = get_user_by_chat_id(receiver_id)
+        sender_info = get_user_by_id(sender_id)
+        receiver_info = get_user_by_id(receiver_id)
 
         await context.bot.send_message(
             chat_id=sender_info["telegram_id"],

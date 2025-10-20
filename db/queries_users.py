@@ -41,6 +41,22 @@ def get_user_by_chat_id(telegram_id: int) -> dict | None:
         }
     return None
 
+def get_user_by_id(user_id: int) -> dict | None:
+    cursor.execute(
+        "SELECT telegram_id, full_name, role, university, stage FROM users WHERE id = %s;",
+        (user_id,)
+    )
+    result = cursor.fetchone()
+    if result:
+        return {
+            "telegram_id": result[0],
+            "full_name": result[1],
+            "role": result[2],
+            "university": result[3],
+            "stage": result[4],
+        }
+    return None
+
 def search_users(query: str, target_role: str, last_id: int | None = None) -> list[dict] | None:
     base_sql = """
         SELECT id, telegram_id, full_name, role, university, stage, faculty, department, articles, research_interests
