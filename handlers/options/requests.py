@@ -1,9 +1,37 @@
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes
 from db.queries_requests import get_incoming_requests, get_outgoing_requests, respond_request, get_request_users
-from db.queries_users import get_user_by_id
+from db.queries_users import get_user_by_id, user_exists
 
 requests_state = {}
+
+async def view_requests(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.message.chat_id
+
+    if user_exists(chat_id):
+        requests_state[chat_id] = "awaiting_type"
+
+        requests = get_incoming_requests(chat_id)
+
+        if not requests:
+            await update.message.reply_text("У вас нет входящих заявок.")
+            # тут расширение ввода профиля
+            return
+        for r in requests:
+            request_text = (
+                f"- Тема: {r['topic']}\n"
+                f"  От пользователя {r['sender_name']}\n\n"
+            )
+            keyboard = InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("Принять", callback_data=f"accept_request_{r['id']}"),
+                    InlineKeyboardButton("Отклонить", callback_data=f"decline_request_{r['id']}")
+                ]
+            ])
+            await update.message.reply_text(request_text, reply_markup=keyboard)
+        return
+    else:
+        await update.message.reply_text(NOT_REGISTERED)
 
 async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query

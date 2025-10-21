@@ -1,6 +1,7 @@
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 from handlers.options.start import start
 from handlers.options.menu import menu
+from handlers.options.requests import view_requests
 from handlers.handle_text import handle_text
 from handlers.handle_callback import handle_callback
 from config import TOKEN
@@ -10,6 +11,7 @@ def main():
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("menu", menu))
+    app.add_handler(CommandHandler("view_requests"), view_requests)
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
     app.add_handler(CallbackQueryHandler(handle_callback))
 
