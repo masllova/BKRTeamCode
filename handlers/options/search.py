@@ -84,7 +84,12 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
     users = search_users(query_text, target_role, last_id)
 
     if not users:
-        keyboard = InlineKeyboardMarkup([SEARCH_RETRY_BUTTON, SEARCH_EXIT_BUTTON])
+        search_state[chat_id] = {
+            "query": None,
+            "last_id": None,
+            "target_role": None
+        }
+        keyboard = InlineKeyboardMarkup([SEARCH_EXIT_BUTTON])
         await update.message.reply_text(NOTHING_FOUND, reply_markup=keyboard)
         return
     search_state[chat_id]["last_id"] = users[-1]["id"] if len(users) == 3 else None
