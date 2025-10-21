@@ -62,13 +62,13 @@ async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT
 
         await context.bot.send_message(
             chat_id=receiver_info["telegram_id"],
-            text=f"✅ Ваша заявка для {sender_info['full_name']} принята! "
-                 f"Можете увидеть совместный проект в разделе /projects."
+            text=f"Заявка принята, удачной работы в совместном проекте! "
+                 f"Найдите его в разделе /projects."
         )
         await context.bot.send_message(
             chat_id=sender_info["telegram_id"],
-            text=f"Заявка принята, удачной работы в совместном проекте! "
-                 f"Найдите его в разделе /projects."
+            text=f"✅ Ваша заявка для {sender_info['full_name']} принята! "
+                 f"Можете увидеть совместный проект в разделе /projects."
         )
     elif data.startswith("decline_request_"):
         request_id = int(data.split("_")[-1])
@@ -80,12 +80,12 @@ async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT
 
         await context.bot.send_message(
             chat_id=receiver_info["telegram_id"],
-            text=f"❌ Ваша заявка для {sender_info['full_name']} отклонена. "
-                 f"Не расстраивайтесь, попробуйте подобрать более подходящего партнера в /search!"
+            text="Заявка успешно отклонена."
         )
         await context.bot.send_message(
             chat_id=sender_info["telegram_id"],
-            text="Заявка успешно отклонена."
+            text=f"❌ Ваша заявка для {sender_info['full_name']} отклонена. "
+                 f"Не расстраивайтесь, попробуйте подобрать более подходящего партнера в /search!"
         )
     elif data.startswith("delete_request_"):
         request_id = int(data.split("_")[-1])
