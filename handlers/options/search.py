@@ -1,14 +1,34 @@
 import traceback
 from telegram import Update, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-from db.queries_users import get_user_role, search_users
+from db.queries_users import get_user_role, search_users, user_exists
 from db.queries_requests import add_request, request_exists
 from texts.search import SEARCH_STUDENT, SEARCH_TEACHER, NOTHING_FOUND, SEARCH_FINISHED, CHOOSE_ACTION, format_user_profile
+from texts.menu import NOT_REGISTERED
 from keyboards.search import SEARCH_RETRY_BUTTON, SEARCH_EXIT_BUTTON, SEARCH_MORE_BUTTON, request_button
 from keyboards.menu import get_menu_keyboard
 from db.queries_users import get_user_by_chat_id, get_user_role
 
 search_state: dict[int, dict] = {}
+
+async def search(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.message.chat_id
+
+    if user_exists(chat_id):
+        search_state[chat_id] = {
+            "query": None,
+            "last_id": None,
+            "target_role": None
+        }
+        role = get_user_role(chat_id)
+
+        if role == "student":
+            await update.message.reply_text(SEARCH_TEACHER)
+        else:
+            await update.message.reply_text(SEARCH_STUDENT)
+        return
+    else:
+        await update.message.reply_text(NOT_REGISTERED)
 
 async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id

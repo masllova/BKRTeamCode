@@ -2,6 +2,7 @@ from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes
 from db.queries_requests import get_incoming_requests, get_outgoing_requests, respond_request, get_request_users
 from db.queries_users import get_user_by_id, user_exists
+from texts.menu import NOT_REGISTERED
 
 requests_state = {}
 
