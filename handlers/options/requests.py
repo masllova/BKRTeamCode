@@ -88,11 +88,11 @@ async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT
         receiver_info = get_user_by_id(receiver_id)
 
         if sender_info["role"] == "teacher":
-            teacher_id = sender_info["id"]
-            student_id = receiver_info["id"]
+            teacher_id = sender_id
+            student_id = receiver_id
         else:
-            teacher_id = receiver_info["id"]
-            student_id = sender_info["id"]
+            teacher_id = receiver_id
+            student_id = sender_id
 
         group_name = get_request_topic(request_id)
         create_group(teacher_id, student_id, group_name)
