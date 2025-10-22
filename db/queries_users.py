@@ -11,6 +11,15 @@ def add_user(telegram_id: int, full_name: str, role: str, university: str, stage
     )
     conn.commit()
 
+def add_group_to_user(user_id: int, group_id: int):
+    with conn.cursor() as cursor:
+        cursor.execute("""
+            UPDATE users
+            SET group_ids = array_append(group_ids, %s)
+            WHERE id = %s;
+        """, (group_id, user_id))
+        conn.commit()
+
 def user_exists(telegram_id: int) -> bool:
     cursor.execute("SELECT 1 FROM users WHERE telegram_id = %s;", (telegram_id,))
     return cursor.fetchone() is not None

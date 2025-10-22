@@ -7,7 +7,7 @@ from db.queries_requests import (
     get_request_users,
     get_request_topic
 )
-from db.queries_users import get_user_by_id, user_exists
+from db.queries_users import get_user_by_id, user_exists, add_group_to_user
 from db.queries_groups import create_group
 from texts.menu import NOT_REGISTERED
 from texts.requests import (
@@ -95,8 +95,9 @@ async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT
             student_id = sender_id
 
         group_name = get_request_topic(request_id)
-        create_group(teacher_id, student_id, group_name)
-        print("create", group_name, "for", teacher_id, "add", student_id)
+        group_id = create_group(teacher_id, student_id, group_name)
+        add_group_to_user(teacher_id, group_id)
+        add_group_to_user(student_id, group_id)
         respond_request(request_id)
 
         await context.bot.send_message(
