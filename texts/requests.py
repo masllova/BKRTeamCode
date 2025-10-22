@@ -7,5 +7,5 @@ REQUEST_DECLINED_TEXT_SENDER = "❌ Ваша заявка для {receiver_name}
 REQUEST_DELETED_TEXT = "Заявка удалена.\nМожете найти нового кандидата для проекта в разделе /search."
 REQUEST_REMINDER_SENT_TEXT = "Напоминание отправлено! Ожидайте ответа."
 REQUEST_REMINDER_RECEIVED_TEXT = "🔔 Заявка от {sender_name} ждёт вашего решения.\nЧтобы просмотреть все заявки, введите /view_requests."
-INCOMING_REQUEST_TEMPLATE = "- Тема: {topic}\n  От пользователя {sender}\n\n"
-OUTGOING_REQUEST_TEMPLATE = "- Тема: {topic}\n  Пользователю {receiver}\n\n"
+INCOMING_REQUEST_TEMPLATE = "- Тема: {topic}\nОт пользователя {sender}\n\n"
+OUTGOING_REQUEST_TEMPLATE = "- Тема: {topic}\nПользователю {receiver}\n\n"
