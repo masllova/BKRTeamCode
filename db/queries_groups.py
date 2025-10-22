@@ -14,6 +14,17 @@ def get_group_by_id(group_id: int) -> dict | None:
             return None
         keys = [desc[0] for desc in cursor.description]
         return dict(zip(keys, result))
+    
+def create_group(teacher_id: int, student_id: int, name: str):
+    with conn.cursor() as cursor:
+        cursor.execute("""
+            INSERT INTO groups (teacher_id, student_id, name, tasks, deadlines, files, created_at, articles, vkr)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id;
+        """, (teacher_id, student_id, name, json.dumps({}), json.dumps({}), [], datetime.now(), [], [])
+        )
+        group_id = cursor.fetchone()[0]
+        conn.commit()
 
 def update_group_name(group_id: int, new_name: str):
     with conn.cursor() as cursor:

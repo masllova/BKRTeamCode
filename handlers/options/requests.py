@@ -1,7 +1,14 @@
 from telegram import Update, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-from db.queries_requests import get_incoming_requests, get_outgoing_requests, respond_request, get_request_users
+from db.queries_requests import (
+    get_incoming_requests, 
+    get_outgoing_requests, 
+    respond_request, 
+    get_request_users,
+    get_request_topic
+)
 from db.queries_users import get_user_by_id, user_exists
+from db.queries_groups import create_group
 from texts.menu import NOT_REGISTERED
 from texts.requests import (
     NO_INCOMING_REQUESTS,
@@ -80,6 +87,16 @@ async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT
         sender_info = get_user_by_id(sender_id)
         receiver_info = get_user_by_id(receiver_id)
 
+        if sender_info["role"] == "teacher":
+            teacher_id = sender_info["id"]
+            student_id = receiver_info["id"]
+        else:
+            teacher_id = receiver_info["id"]
+            student_id = sender_info["id"]
+
+        group_name = get_request_topic(request_id)
+        create_group(teacher_id, student_id, group_name)
+        print("create", group_name, "for", teacher_id, "add", student_id)
         respond_request(request_id)
 
         await context.bot.send_message(

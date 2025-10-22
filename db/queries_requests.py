@@ -57,6 +57,17 @@ def get_incoming_requests(user_telegram_id: int) -> list[dict] | None:
             }
             for r in results
         ]
+    
+def get_request_topic(request_id: int) -> str | None:
+    with conn.cursor() as cursor:
+        cursor.execute(
+            "SELECT topic FROM requests WHERE id = %s;",
+            (request_id,)
+        )
+        result = cursor.fetchone()
+        if not result:
+            return None
+        return result[0]
 
 def get_outgoing_requests(user_telegram_id: int) -> list[dict] | None:
     with conn.cursor() as cursor:
