@@ -3,7 +3,19 @@ from telegram import Update, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from db.queries_users import get_user_role, search_users, user_exists
 from db.queries_requests import add_request, request_exists
-from texts.search import SEARCH_STUDENT, SEARCH_TEACHER, NOTHING_FOUND, SEARCH_FINISHED, CHOOSE_ACTION, format_user_profile
+from texts.search import (
+    SEARCH_STUDENT,
+    SEARCH_TEACHER, 
+    NOTHING_FOUND, 
+    SEARCH_FINISHED, 
+    CHOOSE_ACTION, 
+    NEW_REQUESTS,
+    REQUESTS_HAS_BEEN_SENDED,
+    ERROR_WITH_REQUEST,
+    REQUEST_ALREADY_SENDED,
+    ENTER_TOPIC,
+    format_user_profile
+    )
 from texts.menu import NOT_REGISTERED
 from keyboards.search import SEARCH_RETRY_BUTTON, SEARCH_EXIT_BUTTON, SEARCH_MORE_BUTTON, request_button
 from keyboards.menu import get_menu_keyboard
@@ -53,29 +65,20 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
             await context.bot.send_message(
                 chat_id=target_id,
-                text=(
-                    f"📩 Вы получили новую заявку.\n"
-                    f"Тема проекта: {text}\n"
-                    "Чтобы просмотреть заявки, введите команду /view_requests.\n"
-                    "Вы сможете ознакомиться с заявками в любое удобное время через меню."
-                )
+                text=NEW_REQUESTS.format(text=text)
             )
             keyboard = get_menu_keyboard(get_user_role(chat_id))
             await update.message.reply_text(
-                "Всё готово! Ваша заявка успешно отправлена.", 
+                REQUESTS_HAS_BEEN_SENDED, 
                 reply_markup=keyboard
             )
             search_state.pop(chat_id, None)
 
         except Exception as e:
-            # Печатаем полную информацию об ошибке в консоль
             print("Ошибка при создании заявки или отправке сообщения:")
             traceback.print_exc()
             
-            # Сообщение пользователю
-            await update.message.reply_text(
-                "⚠ Не удалось создать заявку или отправить уведомление. Попробуйте позже."
-            )
+            await update.message.reply_text(ERROR_WITH_REQUEST)
         return
 
     query_text = search_state[chat_id]["query"]
@@ -110,7 +113,7 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
             keyboard = InlineKeyboardMarkup([request_button(target_id)])
             await update.message.reply_text(text_card, reply_markup=keyboard)
         else:
-            text_card += "\n ❗️ Заявка уже отправлена"
+            text_card += REQUEST_ALREADY_SENDED
             await update.message.reply_text(text_card)
 
     buttons = []
@@ -144,10 +147,7 @@ async def handle_search_callback(update, context):
             "last_id": None,
             "target_role": None
         }
-        await query.message.reply_text(
-            f"Пожалуйста, введите название темы для совместного проекта.\n"
-            f"Её будет видно в заявке для {target_user['full_name']}"
-        )
+        await query.message.reply_text(ENTER_TOPIC.format(name=target_user['full_name']))
         return
     elif data == "search_retry":
         role = get_user_role(chat_id)
