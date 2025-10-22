@@ -24,6 +24,14 @@ def user_exists(telegram_id: int) -> bool:
     cursor.execute("SELECT 1 FROM users WHERE telegram_id = %s;", (telegram_id,))
     return cursor.fetchone() is not None
 
+def get_user_group_ids(telegram_id: int) -> list[int]:
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT group_ids FROM users WHERE telegram_id = %s;", (telegram_id,))
+        result = cursor.fetchone()
+        if not result or not result[0]:
+            return []
+        return result[0]
+
 def get_user_role(telegram_id: int) -> str | None:
     cursor.execute(
         "SELECT role FROM users WHERE telegram_id = %s;",
