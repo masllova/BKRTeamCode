@@ -1,5 +1,13 @@
 from telegram import InlineKeyboardButton
-ACCEPT_BUTTON = InlineKeyboardButton("Принять", callback_data="accept_request")
-DECLINE_BUTTON = InlineKeyboardButton("Отклонить", callback_data="decline_request")
-DELETE_BUTTON = InlineKeyboardButton("Удалить", callback_data="delete_request")
-REMIND_BUTTON = InlineKeyboardButton("Напомнить", callback_data="remind_request")
+
+def build_incoming_keyboard(id: int):
+    return [[
+        InlineKeyboardButton("Принять", callback_data=f"accept_request_{id}"), 
+        InlineKeyboardButton("Отклонить", callback_data=f"decline_request_{id}")
+        ]]
+
+def build_outgoing_keyboard(id: int):
+    return [[
+        InlineKeyboardButton("Удалить", callback_data=f"delete_request_{id}"), 
+        InlineKeyboardButton("Напомнить", callback_data=f"remind_request_{id}")
+        ]]

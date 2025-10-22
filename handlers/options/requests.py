@@ -1,4 +1,4 @@
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import Update, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from db.queries_requests import get_incoming_requests, get_outgoing_requests, respond_request, get_request_users
 from db.queries_users import get_user_by_id, user_exists
@@ -16,7 +16,7 @@ from texts.requests import (
     INCOMING_REQUEST_TEMPLATE, 
     OUTGOING_REQUEST_TEMPLATE
 )
-from keyboards.requests import ACCEPT_BUTTON, DECLINE_BUTTON, DELETE_BUTTON, REMIND_BUTTON
+from keyboards.requests import build_incoming_keyboard, build_outgoing_keyboard
 
 requests_state = {}
 
@@ -35,7 +35,7 @@ async def view_requests(update: Update, context: ContextTypes.DEFAULT_TYPE):
         for r in requests:
             await update.message.reply_text(
                 INCOMING_REQUEST_TEMPLATE.format(topic=r['topic'], sender=r['sender_name']), 
-                reply_markup=InlineKeyboardMarkup([[ACCEPT_BUTTON, DECLINE_BUTTON]])
+                reply_markup=InlineKeyboardMarkup(build_incoming_keyboard(r['id']))
             )
         return
     else:
@@ -57,7 +57,7 @@ async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT
         for r in requests:
             await query.message.reply_text(
                 INCOMING_REQUEST_TEMPLATE.format(topic=r['topic'], sender=r['sender_name']), 
-                reply_markup=InlineKeyboardMarkup([[ACCEPT_BUTTON, DECLINE_BUTTON]])
+                reply_markup=InlineKeyboardMarkup(build_incoming_keyboard(r['id']))
             )
         return
 
@@ -71,7 +71,7 @@ async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT
         for r in requests:
             await query.message.reply_text(
                 OUTGOING_REQUEST_TEMPLATE.format(topic=r['topic'],receiver=r['receiver_name']), 
-                reply_markup=InlineKeyboardMarkup([[DELETE_BUTTON, REMIND_BUTTON]])
+                reply_markup=InlineKeyboardMarkup(build_outgoing_keyboard(r['id']))
             )
         return
     elif data.startswith("accept_request_"):
