@@ -51,6 +51,7 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
         project_id = int(state.split("_")[-1])
         update_group_name(project_id, text)
         await update.message.reply_text("Переименование прошло успешно!")
+        project_text = get_text_for_project(project_id)
 
         keyboard = [
             [
@@ -67,9 +68,9 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
-        if text:
+        if project_text:
             await update.message.reply_text(
-            text=text,
+            text=project_text,
             parse_mode="HTML",
             reply_markup=reply_markup
         )
