@@ -29,8 +29,8 @@ async def projects(update: Update, context: ContextTypes.DEFAULT_TYPE):
             print('id from group_ids')
             print(id)
             group = get_group_by_id(id)
-            print(group['id'])
             print('group_id')
+            print(group['id'])
             if group:
                 buttons.append([
                         InlineKeyboardButton(
@@ -55,7 +55,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
 
     print(data)
 
-    if not data.startswith("project_"):
+    if data.startswith("project_"):
         project_id = int(data.split("_")[-1])
         group = get_group_by_id(project_id)
 
