@@ -122,7 +122,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
             "Настройки проекта {name}",
             reply_markup= InlineKeyboardMarkup(
                 [
-                    [InlineKeyboardButton("Изменить название", callback_data=f"pedit_name_{project_id}")],
+                    [InlineKeyboardButton("Изменить название", callback_data=f"edit_name_{project_id}")],
                     [InlineKeyboardButton("Удалить проект", callback_data=f"delete_{project_id}")]
                     [InlineKeyboardButton("Выйти в меню", callback_data=f"main_menu{project_id}")]
                 ]
