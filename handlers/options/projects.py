@@ -86,8 +86,6 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
     await query.answer()
     data = query.data
 
-    print(data)
-
     if data.startswith("project_"):
         project_id = int(data.split("_")[-1])
         text = get_text_for_project(project_id)
@@ -149,7 +147,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         chat_id = query.message.chat_id
         project_id, name = await extract_project_info(data, query)
         delete_group(project_id)
-        return_to_menu(update, context, "Проект был удален, можете продолжить работу в меню")
+        await return_to_menu(update, context, "Проект был удален, можете продолжить работу в меню")
         return
     elif data.startswith("edit_name_"):
         chat_id = query.message.chat_id
@@ -159,7 +157,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
             f"Ввдите новое название для проекта {name}"
         )
     elif data.startswith("main_menu"):
-        return_to_menu(update, context, "Работа с проектом завершена")
+        await return_to_menu(update, context, "Работа с проектом завершена")
         return
     
 
