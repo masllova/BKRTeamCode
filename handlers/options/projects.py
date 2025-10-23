@@ -3,7 +3,13 @@ from telegram.ext import ContextTypes
 import os
 import json
 from datetime import datetime
-from db.queries_groups import get_group_by_id, delete_group, update_group_name, add_vkr_to_group
+from db.queries_groups import (
+    get_group_by_id, 
+    delete_group, 
+    update_group_name, 
+    add_vkr_to_group,
+    remove_vkr_from_group
+)
 from db.queries_users import get_user_group_ids, get_user_by_id, user_exists, get_user_role
 from texts.menu import NOT_REGISTERED
 from keyboards.menu import get_menu_keyboard
@@ -51,6 +57,7 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
     if state.startswith("edit_name_"):
         project_id = int(state.split("_")[-1])
         update_group_name(project_id, text)
+        groups_state[chat_id] = "projects"
         await update.message.reply_text("Переименование прошло успешно!")
         project_text = get_text_for_project(project_id)
 
@@ -103,6 +110,7 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
             # Сохраняем в БД как новый ВКР
             add_vkr_to_group(project_id, save_path, kind="file")
 
+            groups_state[chat_id] = "projects"
             await update.message.reply_text(
                 f"✅ Файл ВКР успешно обновлён: {os.path.basename(save_path)}"
             )
@@ -114,6 +122,7 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
             # Простейшая валидация ссылки
             if text.startswith("http://") or text.startswith("https://"):
                 add_vkr_to_group(project_id, text, kind="link")
+                groups_state[chat_id] = "projects"
                 await update.message.reply_text("✅ Ссылка на ВКР успешно обновлена.")
             else:
                 await update.message.reply_text(
@@ -230,7 +239,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         ])
 
         replace_buttons = InlineKeyboardMarkup([
-            [InlineKeyboardButton("Добавить", callback_data=f"add_vkr_{project_id}")],
+            [InlineKeyboardButton("Заменить", callback_data=f"add_vkr_{project_id}")],
             [InlineKeyboardButton("Назад", callback_data=f"files_{project_id}")]
         ])
 
@@ -264,6 +273,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         project_id, name = await extract_project_info(data, query)
         groups_state[chat_id] = f"add_vkr_{project_id}"
         await query.message.reply_text("Добавьте файл или пришлите ссылку.\nОбратите внимание, что это заменит прошлый файл без возможности вернуть его. Если нужно сохранить старый файл — лучше перейдите в раздел прочие файлы.")
+
     elif data.startswith("articles_"):
         await return_to_menu(update, context, "Работа с проектом завершена")
         return
