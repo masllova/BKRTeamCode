@@ -47,7 +47,7 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
     text = update.message.text.strip()
     state = groups_state.get(chat_id)
 
-    if state.startswith("project_edit_name_"):
+    if state.startswith("edit_name_"):
         project_id = int(state.split("_")[-1])
         update_group_name(project_id, text)
         await update.message.reply_text("Переименование прошло успешно!")
@@ -55,12 +55,12 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
 
         keyboard = [
             [
-                InlineKeyboardButton("Задачи", callback_data=f"project_tasks_{project_id}"),
-                InlineKeyboardButton("Дедлайны", callback_data=f"project_deadlines_{project_id}")
+                InlineKeyboardButton("Задачи", callback_data=f"tasks_{project_id}"),
+                InlineKeyboardButton("Дедлайны", callback_data=f"deadlines_{project_id}")
             ],
             [
-                InlineKeyboardButton("Файлы", callback_data=f"project_files_{project_id}"),
-                InlineKeyboardButton("Настройки", callback_data=f"project_settings_{project_id}")
+                InlineKeyboardButton("Файлы", callback_data=f"files_{project_id}"),
+                InlineKeyboardButton("Настройки", callback_data=f"settings_{project_id}")
             ],
             [
                 InlineKeyboardButton("Выйти в меню", callback_data="main_menu")
@@ -94,12 +94,12 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
 
         keyboard = [
             [
-                InlineKeyboardButton("Задачи", callback_data=f"project_tasks_{project_id}"),
-                InlineKeyboardButton("Дедлайны", callback_data=f"project_deadlines_{project_id}")
+                InlineKeyboardButton("Задачи", callback_data=f"tasks_{project_id}"),
+                InlineKeyboardButton("Дедлайны", callback_data=f"deadlines_{project_id}")
             ],
             [
-                InlineKeyboardButton("Файлы", callback_data=f"project_files_{project_id}"),
-                InlineKeyboardButton("Настройки", callback_data=f"project_settings_{project_id}")
+                InlineKeyboardButton("Файлы", callback_data=f"files_{project_id}"),
+                InlineKeyboardButton("Настройки", callback_data=f"settings_{project_id}")
             ],
             [
                 InlineKeyboardButton("Выйти в меню", callback_data="main_menu")
@@ -116,36 +116,36 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         else:
             await query.message.reply_text("Проект не найден или был удалён.")
             return
-    elif data.startswith("project_settings_"):
+    elif data.startswith("settings_"):
         project_id, name = await extract_project_info(data, query)
         await query.message.reply_text(
             "Настройки проекта {name}",
             reply_markup= InlineKeyboardMarkup(
                 [
-                    [InlineKeyboardButton("Изменить название", callback_data=f"project_edit_name_{project_id}")],
-                    [InlineKeyboardButton("Удалить проект", callback_data=f"project_delete_{project_id}")]
+                    [InlineKeyboardButton("Изменить название", callback_data=f"pedit_name_{project_id}")],
+                    [InlineKeyboardButton("Удалить проект", callback_data=f"delete_{project_id}")]
                     [InlineKeyboardButton("Выйти в меню", callback_data=f"main_menu{project_id}")]
                 ]
             )
         )
-    elif data.startswith("project_files_"):
+    elif data.startswith("files_"):
         return
-    elif data.startswith("project_deadlines_"):
+    elif data.startswith("deadlines_"):
         return
-    elif data.startswith("project_tasks_"):
+    elif data.startswith("tasks_"):
         return
-    elif data.startswith("project_delete_"):
+    elif data.startswith("delete_"):
         project_id, name = await extract_project_info(data, query)
         await query.message.reply_text(
             "Вы уверены что хотите удалить проект {name}?",
             reply_markup= InlineKeyboardMarkup(
                 [
-                    [InlineKeyboardButton("Да", callback_data=f"project_confirmed_delete_{project_id}")],
-                    [InlineKeyboardButton("Нет", callback_data=f"project_settings_{project_id}")]
+                    [InlineKeyboardButton("Да", callback_data=f"confirmed_delete_{project_id}")],
+                    [InlineKeyboardButton("Нет", callback_data=f"settings_{project_id}")]
                 ]
             )
         )
-    elif data.startswith("project_confirmed_delete_"):
+    elif data.startswith("confirmed_delete_"):
         chat_id = update.message.chat_id
         project_id, name = await extract_project_info(data, query)
         groups_state[chat_id] = "projects"
@@ -156,10 +156,10 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
             "Проект {name} был удален, можете продолжить работу в меню",
             reply_markup=keyboard
         )
-    elif data.startswith("project_edit_name_"):
+    elif data.startswith("edit_name_"):
         chat_id = update.message.chat_id
         project_id, name = await extract_project_info(data, query)
-        groups_state[chat_id] = "project_edit_name_"
+        groups_state[chat_id] = "edit_name_{project_id}"
         await query.message.reply_text(
             "Ввдите новое название для проекта {name}"
         )
