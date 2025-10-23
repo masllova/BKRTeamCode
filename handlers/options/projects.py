@@ -212,7 +212,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         project_id, name = await extract_project_info(data, query)
         groups_state[chat_id] = f"edit_name_{project_id}"
         await query.message.reply_text(
-            f"Ввдите новое название для проекта {name}"
+            f"Введите новое название для проекта {name}"
         )
     elif data.startswith("vkr_"):
         chat_id = query.message.chat_id
@@ -233,23 +233,23 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
 
             if vkr_item["type"] == "link":
                 text = f"📎 Ссылка на ВКР:\n{vkr_item['value']}"
-                await query.edit_message_text(text, reply_markup=add_button)
+                await query.message.reply_text(text, reply_markup=add_button)
             else:
                 file_path = vkr_item["value"]
                 if os.path.exists(file_path):
-                    await query.edit_message_text("📄 Ваш текущий файл ВКР:")
+                    await query.message.reply_text("📄 Ваш текущий файл ВКР:")
                     await context.bot.send_document(
                         chat_id=query.message.chat.id,
                         document=InputFile(file_path, filename=os.path.basename(file_path)),
                         reply_markup=add_button
                     )
                 else:
-                    await query.edit_message_text(
+                    await query.message.reply_text(
                         "⚠️ Файл ВКР не найден.",
                         reply_markup=add_button
                     )
         else:
-            await query.edit_message_text(
+            await query.message.reply_text(
                 "Файл ВКР отсутствует",
                 reply_markup=add_button
             )
@@ -257,7 +257,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         chat_id = query.message.chat_id
         project_id, name = await extract_project_info(data, query)
         groups_state[chat_id] = f"add_vkr_{project_id}"
-        await query.edit_message_text("Добавьте файл или пришлите ссылку.\nОбратите внимание, что это заменит прошлый файл без возможности вернуть его. Если нужно сохранить старый файл — лучше перейдите в раздел прочие файлы.")
+        await query.message.reply_text("Добавьте файл или пришлите ссылку.\nОбратите внимание, что это заменит прошлый файл без возможности вернуть его. Если нужно сохранить старый файл — лучше перейдите в раздел прочие файлы.")
     elif data.startswith("articles_"):
         await return_to_menu(update, context, "Работа с проектом завершена")
         return
