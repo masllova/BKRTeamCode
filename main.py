@@ -3,9 +3,9 @@ from handlers.options.start import start
 from handlers.options.menu import menu
 from handlers.options.requests import view_requests
 from handlers.options.search import search
+from handlers.options.projects import projects
 from handlers.handle_text import handle_text
 from handlers.handle_callback import handle_callback
-from handlers.options.projects import projects
 from config import TOKEN
 
 def main():
