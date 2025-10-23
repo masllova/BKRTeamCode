@@ -1,4 +1,5 @@
 import json
+import os
 from datetime import datetime
 from db.connection import conn
 
@@ -41,31 +42,90 @@ def delete_group(group_id: int):
         cursor.execute("DELETE FROM groups WHERE id = %s;", (group_id,))
         conn.commit()
 
-def add_file_to_group(group_id: int, file_name: str):
+def add_file_to_group(group_id: int, value: str, kind: str = "file"):
+    """
+    value: путь к файлу или ссылка
+    kind: 'file' или 'link'
+    """
+    if kind not in ("file", "link"):
+        raise ValueError("Неверный тип элемента")
+    
     with conn.cursor() as cursor:
-        cursor.execute("""
-            UPDATE groups
-            SET files = array_append(files, %s)
-            WHERE id = %s;
-        """, (file_name, group_id))
+        cursor.execute("SELECT files FROM groups WHERE id = %s", (group_id,))
+        current = cursor.fetchone()[0] or []
+
+        if kind == "file":
+            filename = os.path.basename(value)
+            base, ext = os.path.splitext(filename)
+            counter = 1
+            existing_names = [os.path.basename(item["value"]) for item in current if item["type"] == "file"]
+            new_filename = filename
+            while new_filename in existing_names:
+                new_filename = f"{base}{counter}{ext}"
+                counter += 1
+            value = os.path.join(os.path.dirname(value), new_filename)
+
+        new_item = {"type": kind, "value": value}
+        current.append(new_item)
+        cursor.execute("UPDATE groups SET files = %s WHERE id = %s", (json.dumps(current), group_id))
         conn.commit()
 
-def add_article_to_group(group_id: int, article_name: str):
+
+def add_article_to_group(group_id: int, value: str, kind: str = "file"):
+    """
+    value: путь к файлу или ссылка
+    kind: 'file' или 'link'
+    """
+    if kind not in ("file", "link"):
+        raise ValueError("Неверный тип элемента")
+    
     with conn.cursor() as cursor:
-        cursor.execute("""
-            UPDATE groups
-            SET articles = array_append(articles, %s)
-            WHERE id = %s;
-        """, (article_name, group_id))
+        cursor.execute("SELECT articles FROM groups WHERE id = %s", (group_id,))
+        current = cursor.fetchone()[0] or []
+
+        if kind == "file":
+            filename = os.path.basename(value)
+            base, ext = os.path.splitext(filename)
+            counter = 1
+            existing_names = [os.path.basename(item["value"]) for item in current if item["type"] == "file"]
+            new_filename = filename
+            while new_filename in existing_names:
+                new_filename = f"{base}{counter}{ext}"
+                counter += 1
+            value = os.path.join(os.path.dirname(value), new_filename)
+
+        new_item = {"type": kind, "value": value}
+        current.append(new_item)
+        cursor.execute("UPDATE groups SET articles = %s WHERE id = %s", (json.dumps(current), group_id))
         conn.commit()
 
-def add_vkr_to_group(group_id: int, vkr_name: str):
+def add_vkr_to_group(group_id: int, value: str, kind: str = "file"):
+    """
+    value: путь к файлу или ссылка
+    kind: 'file' или 'link'
+    Перезаписывает поле vkr целиком, но если файл с таким именем уже есть, добавляет суффикс
+    """
+    if kind not in ("file", "link"):
+        raise ValueError("Неверный тип элемента")
+    
     with conn.cursor() as cursor:
-        cursor.execute("""
-            UPDATE groups
-            SET vkr = array_append(vkr, %s)
-            WHERE id = %s;
-        """, (vkr_name, group_id))
+        cursor.execute("SELECT vkr FROM groups WHERE id = %s", (group_id,))
+        current = cursor.fetchone()[0] or []
+        if kind == "file":
+            filename = os.path.basename(value)
+            base, ext = os.path.splitext(filename)
+            counter = 1
+
+            existing_names = [os.path.basename(item["value"]) for item in current if item["type"] == "file"]
+            new_filename = filename
+            while new_filename in existing_names:
+                new_filename = f"{base}{counter}{ext}"
+                counter += 1
+
+            value = os.path.join(os.path.dirname(value), new_filename)
+        
+        new_item = {"type": kind, "value": value}
+        cursor.execute("UPDATE groups SET vkr = %s WHERE id = %s", (json.dumps([new_item]), group_id))
         conn.commit()
 
 def add_task_to_group(group_id: int, task_name: str, description: str):
