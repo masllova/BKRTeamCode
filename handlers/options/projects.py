@@ -60,7 +60,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         group = get_group_by_id(project_id)
 
         if not group:
-            await query.edit_message_text("❌ Проект не найден или был удалён.")
+            await query.edit_message_text("Проект не найден или был удалён.")
             return
 
         name = group.get("name", "Без названия")
@@ -85,26 +85,26 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
             deadline_count = 0
 
         text = (
-            f"📘 <b>{name}</b>\n"
-            f"👨‍🏫 Руководитель: {teacher_name}\n"
-            f"🎓 Студент: {student_name}\n"
-            f"🗓 Создан: "
+            f"<b>{name}</b>\n"
+            f"Руководитель: {teacher_name}\n"
+            f"Студент: {student_name}\n"
+            f"Создан: "
             f"{created_at.strftime('%d.%m.%Y') if isinstance(created_at, datetime) else created_at}\n\n"
-            f"📋 Задач: {task_count}\n"
-            f"⏰ Дедлайнов: {deadline_count}"
+            f"📋 Количество актуальных задач: {task_count}\n"
+            f"⏰ Количество актуальных дедлайнов: {deadline_count}"
         )
 
         keyboard = [
             [
-                InlineKeyboardButton("📂 Файлы", callback_data=f"project_files_{project_id}"),
-                InlineKeyboardButton("⚙️ Настройки", callback_data=f"project_settings_{project_id}")
+                InlineKeyboardButton("Задачи", callback_data=f"project_tasks_{project_id}"),
+                InlineKeyboardButton("Дедлайны", callback_data=f"project_deadlines_{project_id}")
             ],
             [
-                InlineKeyboardButton("🧾 Задачи", callback_data=f"project_tasks_{project_id}"),
-                InlineKeyboardButton("📅 Дедлайны", callback_data=f"project_deadlines_{project_id}")
+                InlineKeyboardButton("Файлы", callback_data=f"project_files_{project_id}"),
+                InlineKeyboardButton("Настройки", callback_data=f"project_settings_{project_id}")
             ],
             [
-                InlineKeyboardButton("⬅️ В меню", callback_data="main_menu")
+                InlineKeyboardButton("Выйти в меню", callback_data="main_menu")
             ]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
