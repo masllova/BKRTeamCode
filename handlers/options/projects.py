@@ -220,7 +220,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
 
         group = get_group_by_id(project_id)
         if not group:
-            await query.edit_message_text("❌ Проект не найден или был удалён.")
+            await query.message.reply_text("❌ Проект не найден или был удалён.")
             return
 
         vkr_list = group.get("vkr", [])
@@ -253,7 +253,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
                 "Файл ВКР отсутствует",
                 reply_markup=add_button
             )
-    elif data.startwith("add_vkr_"):
+    elif data.starstwith("add_vkr_"):
         chat_id = query.message.chat_id
         project_id, name = await extract_project_info(data, query)
         groups_state[chat_id] = f"add_vkr_{project_id}"
