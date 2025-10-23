@@ -148,14 +148,9 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
     elif data.startswith("confirmed_delete_"):
         chat_id = query.message.chat_id
         project_id, name = await extract_project_info(data, query)
-        groups_state[chat_id] = "projects"
         delete_group(project_id)
-
-        keyboard = get_menu_keyboard(get_user_role(chat_id))
-        await query.message.reply_text(
-            f"Проект {name} был удален, можете продолжить работу в меню",
-            reply_markup=keyboard
-        )
+        return_to_menu(update, context, "Проект был удален, можете продолжить работу в меню")
+        return
     elif data.startswith("edit_name_"):
         chat_id = query.message.chat_id
         project_id, name = await extract_project_info(data, query)
@@ -164,6 +159,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
             f"Ввдите новое название для проекта {name}"
         )
     elif data.startswith("main_menu"):
+        return_to_menu(update, context, "Работа с проектом завершена")
         return
     
 
@@ -180,6 +176,15 @@ async def extract_project_info(data: str, query) -> tuple[int | None, str | None
 
     name = group.get("name", "Без названия")
     return project_id, name
+
+async def return_to_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str):
+    query = update.callback_query
+    chat_id = query.message.chat_id
+    role = get_user_role(chat_id)
+    keyboard = get_menu_keyboard(role)
+    await query.message.reply_text(text, reply_markup=keyboard)
+    groups_state.pop(chat_id, None)
+    return
 
 def get_text_for_project(project_id: int) -> str | None:
     group = get_group_by_id(project_id)
