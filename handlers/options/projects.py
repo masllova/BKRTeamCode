@@ -131,6 +131,8 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
     await query.answer()
     data = query.data
 
+    print(data)
+
     if data.startswith("project_"):
         project_id = int(data.split("_")[-1])
         text = get_text_for_project(project_id)
@@ -259,9 +261,9 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
     elif data.startswith("articles_"):
         await return_to_menu(update, context, "Работа с проектом завершена")
         return
-    elif data.startswith("project_"):
-        await return_to_menu(update, context, "Работа с проектом завершена")
-        return
+    # elif data.startswith("project_"):
+    #     await return_to_menu(update, context, "Работа с проектом завершена")
+    #     return
     elif data == "main_menu":
         await return_to_menu(update, context, "Работа с проектом завершена")
         return
