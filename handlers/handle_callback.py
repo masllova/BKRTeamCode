@@ -26,5 +26,5 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await handle_requests_callback(update, context)
         return
     elif groups_state.get(chat_id):
-        await handle_projects_callback
+        await handle_projects_callback(update, context)
         return
