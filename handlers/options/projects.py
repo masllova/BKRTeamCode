@@ -159,7 +159,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
     elif data.startswith("edit_name_"):
         chat_id = query.message.chat_id
         project_id, name = await extract_project_info(data, query)
-        groups_state[chat_id] = "edit_name_{project_id}"
+        groups_state[chat_id] = f"edit_name_{project_id}"
         await query.message.reply_text(
             f"Ввдите новое название для проекта {name}"
         )
