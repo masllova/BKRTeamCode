@@ -7,8 +7,7 @@ from db.queries_groups import (
     get_group_by_id, 
     delete_group, 
     update_group_name, 
-    add_vkr_to_group,
-    remove_vkr_from_group
+    add_vkr_to_group
 )
 from db.queries_users import get_user_group_ids, get_user_by_id, user_exists, get_user_role
 from texts.menu import NOT_REGISTERED
