@@ -61,7 +61,7 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     
     if command == "projects":
-        groups_state[chat_id] = "select_project"
+        groups_state[chat_id] = "projects"
         group_ids = get_user_group_ids(chat_id)
 
         if not group_ids:
