@@ -253,7 +253,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
                 "Файл ВКР отсутствует",
                 reply_markup=add_button
             )
-    elif data.starstwith("add_vkr_"):
+    elif data.startswith("add_vkr_"):
         chat_id = query.message.chat_id
         project_id, name = await extract_project_info(data, query)
         groups_state[chat_id] = f"add_vkr_{project_id}"
