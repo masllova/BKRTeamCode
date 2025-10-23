@@ -108,10 +108,11 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
 
             # Сохраняем в БД как новый ВКР
             add_vkr_to_group(project_id, save_path, kind="file")
-
+            back_button= InlineKeyboardMarkup([[InlineKeyboardButton("Назад", callback_data=f"vkr_{project_id}")]])
             groups_state[chat_id] = "projects"
             await update.message.reply_text(
-                f"✅ Файл ВКР успешно обновлён: {os.path.basename(save_path)}"
+                f"✅ Файл ВКР успешно обновлён: {os.path.basename(save_path)}",
+                reply_markup=back_button
             )
 
         # Если прислали текст
@@ -122,7 +123,8 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
             if text.startswith("http://") or text.startswith("https://"):
                 add_vkr_to_group(project_id, text, kind="link")
                 groups_state[chat_id] = "projects"
-                await update.message.reply_text("✅ Ссылка на ВКР успешно обновлена.")
+                back_button= InlineKeyboardMarkup([[InlineKeyboardButton("Назад", callback_data=f"vkr_{project_id}")]])
+                await update.message.reply_text("✅ Ссылка на ВКР успешно обновлена.", reply_markup=back_button)
             else:
                 await update.message.reply_text(
                     "Похоже, вы отправили не ссылку. Пожалуйста, пришлите корректную ссылку, начинающуюся с http:// или https:// \n или пришлите файл"
