@@ -26,7 +26,11 @@ async def projects(update: Update, context: ContextTypes.DEFAULT_TYPE):
         buttons = []
 
         for id in group_ids:
+            print('id from group_ids')
+            print(id)
             group = get_group_by_id(id)
+            print(group['id'])
+            print('group_id')
             if group:
                 buttons.append([
                         InlineKeyboardButton(
@@ -34,7 +38,6 @@ async def projects(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         callback_data=f"project_{id}"
                     )]
                 )
-
         text = "Выбери проект:"
         keyboard = InlineKeyboardMarkup(buttons)
         await update.message.reply_text(text, reply_markup=keyboard)
@@ -50,10 +53,12 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
     await query.answer()
     data = query.data
 
+    print(data)
+
     if not data.startswith("project_"):
         project_id = int(data.split("_")[-1])
-
         group = get_group_by_id(project_id)
+
         if not group:
             await query.edit_message_text("❌ Проект не найден или был удалён.")
             return
