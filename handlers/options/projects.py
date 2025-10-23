@@ -119,7 +119,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
     elif data.startswith("settings_"):
         project_id, name = await extract_project_info(data, query)
         await query.message.reply_text(
-            "Настройки проекта {name}",
+            f"Настройки проекта {name}",
             reply_markup= InlineKeyboardMarkup(
                 [
                     [InlineKeyboardButton("Изменить название", callback_data=f"edit_name_{project_id}")],
@@ -137,7 +137,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
     elif data.startswith("delete_"):
         project_id, name = await extract_project_info(data, query)
         await query.message.reply_text(
-            "Вы уверены что хотите удалить проект {name}?",
+            f"Вы уверены что хотите удалить проект {name}?",
             reply_markup= InlineKeyboardMarkup(
                 [
                     [InlineKeyboardButton("Да", callback_data=f"confirmed_delete_{project_id}")],
@@ -153,7 +153,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
 
         keyboard = get_menu_keyboard(get_user_role(chat_id))
         await query.message.reply_text(
-            "Проект {name} был удален, можете продолжить работу в меню",
+            f"Проект {name} был удален, можете продолжить работу в меню",
             reply_markup=keyboard
         )
     elif data.startswith("edit_name_"):
@@ -161,7 +161,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         project_id, name = await extract_project_info(data, query)
         groups_state[chat_id] = "edit_name_{project_id}"
         await query.message.reply_text(
-            "Ввдите новое название для проекта {name}"
+            f"Ввдите новое название для проекта {name}"
         )
     elif data.startswith("main_menu"):
         return
