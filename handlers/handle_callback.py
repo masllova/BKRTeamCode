@@ -4,6 +4,7 @@ from db.queries_users import get_user_by_chat_id
 from handlers.options.registration import handle_registration_callback, user_state
 from handlers.options.search import handle_search_callback, search_state
 from handlers.options.requests import handle_requests_callback, requests_state
+from handlers.options.projects import handle_projects_callback, groups_state
 from texts.options import NOT_REGISTERED
 
 async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -23,4 +24,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     elif requests_state.get(chat_id):
         await handle_requests_callback(update, context)
+        return
+    elif groups_state.get(chat_id):
+        await handle_projects_callback
         return
