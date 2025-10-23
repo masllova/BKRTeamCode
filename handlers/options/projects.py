@@ -224,8 +224,14 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
             return
 
         vkr_list = group.get("vkr", [])
-        add_button = InlineKeyboardMarkup([
-            [InlineKeyboardButton("Добавить", callback_data=f"add_vkr_{project_id}")]
+        add_buttons = InlineKeyboardMarkup([
+            [InlineKeyboardButton("Добавить", callback_data=f"add_vkr_{project_id}")],
+            [InlineKeyboardButton("Назад", callback_data=f"files_{project_id}")]
+        ])
+
+        replace_buttons = InlineKeyboardMarkup([
+            [InlineKeyboardButton("Добавить", callback_data=f"add_vkr_{project_id}")],
+            [InlineKeyboardButton("Назад", callback_data=f"files_{project_id}")]
         ])
 
         if vkr_list:
@@ -233,7 +239,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
 
             if vkr_item["type"] == "link":
                 text = f"📎 Ссылка на ВКР:\n{vkr_item['value']}"
-                await query.message.reply_text(text, reply_markup=add_button)
+                await query.message.reply_text(text, reply_markup=replace_buttons)
             else:
                 file_path = vkr_item["value"]
                 if os.path.exists(file_path):
@@ -241,17 +247,17 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
                     await context.bot.send_document(
                         chat_id=query.message.chat.id,
                         document=InputFile(file_path, filename=os.path.basename(file_path)),
-                        reply_markup=add_button
+                        reply_markup=replace_buttons
                     )
                 else:
                     await query.message.reply_text(
                         "⚠️ Файл ВКР не найден.",
-                        reply_markup=add_button
+                        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Назад", callback_data=f"files_{project_id}")]])
                     )
         else:
             await query.message.reply_text(
                 "Файл ВКР отсутствует",
-                reply_markup=add_button
+                reply_markup=add_buttons
             )
     elif data.startswith("add_vkr_"):
         chat_id = query.message.chat_id
