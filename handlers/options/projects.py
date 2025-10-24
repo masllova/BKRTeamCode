@@ -340,39 +340,50 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
             links = []
             files = []
 
+            # Разделим по типам
             for item in articles_list:
                 if item["type"] == "link":
                     links.append(item["value"])
                 elif item["type"] == "file":
                     files.append(item["value"])
 
+            # Собираем текст
             text_parts = []
-
             if links:
                 links_text = "📎 Ссылки:\n" + "\n".join([f"{idx+1}. {link}" for idx, link in enumerate(links)])
                 text_parts.append(links_text)
-
             if files:
-                files_text = "📄 Файлы:"
-                text_parts.append(files_text)
+                text_parts.append("📄 Файлы:")
 
-            text_message = "\n\n".join(text_parts)
-            await query.message.reply_text(
-                text_message
-            )
+            text_message = "\n\n".join(text_parts) if text_parts else "Нет доступных статей."
 
+            # Если есть файлы → объединяем в медиагруппу
             if files:
+                media = []
                 for file_path in files:
                     if os.path.exists(file_path):
-                        await context.bot.send_document(
-                            chat_id=query.message.chat.id,
-                            document=InputFile(file_path, filename=os.path.basename(file_path))
-                        )
-                    else:
-                        await query.message.reply_text(f"⚠️ Файл не найден: {file_path}")
+                        media.append(InputMediaDocument(
+                            media=InputFile(file_path, filename=os.path.basename(file_path))
+                        ))
 
-            await query.message.reply_text(
-                " ",
+                if media:
+                    # Первое сообщение — текст (и Telegram прикрепит медиагруппу сразу после)
+                    sent_message = await query.message.reply_text(text_message)
+                    await context.bot.send_media_group(
+                        chat_id=query.message.chat.id,
+                        media=media,
+                        reply_to_message_id=sent_message.message_id
+                    )
+                else:
+                    await query.message.reply_text(f"⚠️ Файлы не найдены.")
+            else:
+                # Только ссылки — просто текст
+                await query.message.reply_text(text_message)
+
+            # Кнопки всегда после всего
+            await context.bot.send_message(
+                chat_id=query.message.chat.id,
+                text="Выберите действие после того, как закончите работу с файлами",
                 reply_markup=add_buttons
             )
         else:
