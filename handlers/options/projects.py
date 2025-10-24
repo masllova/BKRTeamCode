@@ -21,7 +21,7 @@ from texts.projects import (
 )
 from keyboards.projects import (
     make_project_keyboard, make_back_keyboard, make_settings_keyboard, make_files_keyboard,
-    make_add_keyboard, make_replace_keyboard
+    make_add_keyboard, make_replace_keyboard, make_confirmed_delete_keyboard
 )
 from db.queries_users import get_user_group_ids, get_user_by_id, user_exists, get_user_role
 from db.queries_files import get_file
@@ -276,7 +276,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
             chat_id = query.message.chat_id
             project_id, name = await extract_project_info(data, query)
             groups_state[chat_id] = f"add_article_{project_id}"
-            
+
             await query.message.reply_text(SEND_LINK_OR_FILE)
     elif data == "main_menu":
         await return_to_menu(update, context, END_OF_WORK)
