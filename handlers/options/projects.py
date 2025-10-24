@@ -168,11 +168,11 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
     elif data.startswith("settings_"):
         project_id, name = await extract_project_info(data, query)
 
-        await query.message.reply_text(PROJECT_SETTINGS.format(name=name), reply_markup=make_settings_keyboard(make_settings_keyboard))
+        await query.message.reply_text(PROJECT_SETTINGS.format(name=name), reply_markup=make_settings_keyboard(project_id))
     elif data.startswith("files_"):
         project_id, name = await extract_project_info(data, query)
 
-        await query.message.reply_text(SELECT_FILE_TYPE, reply_markup=make_files_keyboard(make_files_keyboard))
+        await query.message.reply_text(SELECT_FILE_TYPE, reply_markup=make_files_keyboard(project_id))
     elif data.startswith("deadlines_"):
         return
     elif data.startswith("tasks_"):
