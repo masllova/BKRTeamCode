@@ -11,6 +11,18 @@ from db.queries_groups import (
     add_vkr_to_group,
     add_article_to_group
 )
+from texts.projects import (
+    NO_PROJECTS, SELECT_PROJECT, RENAME_SUCCESS, PROJECT_NOT_FOUND, UPDATE_VKR_FILE_SUCCESS,
+    UPDATE_VKR_LINK_SUCCESS, ADD_ARTICLE_FILE, ADD_ARTICLE_LINK, RESEND_LINK, SEND_LINK_OR_FILE,
+    SEND_LINK_OR_FILE_WITH_ATTENTION, PROJECT_SETTINGS, SELECT_FILE_TYPE, CONFIRMED_DELETE_PROJECT,
+    PROJECT_DELETED, ENTER_NEW_PROJECT_NAME, VKR_LINK, CURRENT_VKR_LINK, NOT_FOUND_VKR_FILE,
+    NOT_FOUND_FILE, NOT_VKR_FILE, ARTICLES, SELECT_BUTTON_AFTER_WORK_WITH_FILES, NO_ARTICLES,
+    END_OF_WORK, NO_NAME, NO_TEACHER, NO_STUDENT, format_project
+)
+from keyboards.projects import (
+    make_project_keyboard, make_back_keyboard, make_settings_keyboard, make_files_keyboard,
+    make_add_keyboard, make_replace_keyboard
+)
 from db.queries_users import get_user_group_ids, get_user_by_id, user_exists, get_user_role
 from db.queries_files import get_file
 from texts.menu import NOT_REGISTERED
@@ -27,13 +39,8 @@ async def projects(update: Update, context: ContextTypes.DEFAULT_TYPE):
         groups_state[chat_id] = "projects"
         
         if not group_ids:
-            await update.message.reply_text(
-                "У Вас пока нет проектов.\n\n"
-                "/search - Найти претендента на общий проект\n"
-                "/requests - Посмотреть заявки"
-            )
+            await update.message.reply_text(NO_PROJECTS)
             return
-
         buttons = []
 
         for id in group_ids:
@@ -45,9 +52,7 @@ async def projects(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         callback_data=f"project_{id}"
                     )]
                 )
-        text = "Выберите проект:"
-        keyboard = InlineKeyboardMarkup(buttons)
-        await update.message.reply_text(text, reply_markup=keyboard)
+        await update.message.reply_text(SELECT_PROJECT, reply_markup=InlineKeyboardMarkup(buttons))
         return
     else:
         await update.message.reply_text(NOT_REGISTERED)
@@ -61,32 +66,18 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
         project_id = int(state.split("_")[-1])
         update_group_name(project_id, text)
         groups_state[chat_id] = "projects"
-        await update.message.reply_text("Переименование прошло успешно!")
-        project_text = get_text_for_project(project_id)
 
-        keyboard = [
-            [
-                InlineKeyboardButton("Задачи", callback_data=f"tasks_{project_id}"),
-                InlineKeyboardButton("Дедлайны", callback_data=f"deadlines_{project_id}")
-            ],
-            [
-                InlineKeyboardButton("Файлы", callback_data=f"files_{project_id}"),
-                InlineKeyboardButton("Настройки", callback_data=f"settings_{project_id}")
-            ],
-            [
-                InlineKeyboardButton("Выйти в меню", callback_data="main_menu")
-            ]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
+        await update.message.reply_text(RENAME_SUCCESS)
+        project_text = get_text_for_project(project_id)
 
         if project_text:
             await update.message.reply_text(
             text=project_text,
             parse_mode="HTML",
-            reply_markup=reply_markup
+            reply_markup=make_project_keyboard(project_id)
         )
         else:
-            await update.message.reply_text("Проект не найден или был удалён.")
+            await update.message.reply_text(PROJECT_NOT_FOUND)
             return
     elif state.startswith("add_vkr_"):
         project_id = int(state.split("_")[-1])
@@ -95,91 +86,67 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
             # добавить ограничения 
             file = update.message.document
             file_name = file.file_name
-
             file_obj = await file.get_file()
             os.makedirs("files/vkr", exist_ok=True)
-
             save_path = os.path.join("files/vkr", file_name)
             base, ext = os.path.splitext(file_name)
             counter = 1
+
             while os.path.exists(save_path):
                 save_path = os.path.join("files/vkr", f"{base}_{counter}{ext}")
                 counter += 1
-
             await file_obj.download_to_drive(save_path)
-
             add_vkr_to_group(project_id, save_path, kind="file")
-            back_button= InlineKeyboardMarkup([[InlineKeyboardButton("Назад", callback_data=f"vkr_{project_id}")]])
             groups_state[chat_id] = "projects"
-            await update.message.reply_text(
-                f"✅ Файл ВКР успешно обновлён: {os.path.basename(save_path)}",
-                reply_markup=back_button
-            )
 
+            # отправить файл как с ссылкой + там файл не файл а путь + кнопку заменить можно сюда тоже
+            await update.message.reply_text(UPDATE_VKR_FILE_SUCCESS, reply_markup=make_back_keyboard("vkr", project_id))
         elif update.message.text:
             text = update.message.text.strip()
 
             if text.startswith("http://") or text.startswith("https://"):
                 add_vkr_to_group(project_id, text, kind="link")
                 groups_state[chat_id] = "projects"
-                back_button= InlineKeyboardMarkup([[InlineKeyboardButton("Назад", callback_data=f"vkr_{project_id}")]])
-                await update.message.reply_text("✅ Ссылка на ВКР успешно обновлена.", reply_markup=back_button)
+
+                # кнопку замнить можно сюда тоже
+                await update.message.reply_text(UPDATE_VKR_LINK_SUCCESS, reply_markup=make_back_keyboard("vkr", project_id))
             else:
-                await update.message.reply_text(
-                    "Похоже, вы отправили не ссылку. Пожалуйста, пришлите корректную ссылку, начинающуюся с http:// или https:// \n или пришлите файл"
-                )
+                await update.message.reply_text(RESEND_LINK)
         else:
-            await update.message.reply_text("⚠️ Пожалуйста, пришлите файл или ссылку для добавления ВКР.")
+            await update.message.reply_text(SEND_LINK_OR_FILE)
     elif state.startswith("add_article_"):
         project_id = int(state.split("_")[-1])
 
         if update.message.document:
             file = update.message.document
             file_name = file.file_name
-
             file_obj = await file.get_file()
             os.makedirs("files/articles", exist_ok=True)
-
             save_path = os.path.join("files/articles", file_name)
             base, ext = os.path.splitext(file_name)
             counter = 1
+
             while os.path.exists(save_path):
                 save_path = os.path.join("files/articles", f"{base}_{counter}{ext}")
                 counter += 1
 
             await file_obj.download_to_drive(save_path)
-
-            # Добавляем файл в массив articles
             add_article_to_group(project_id, save_path, kind="file")
-
-            back_button = InlineKeyboardMarkup([
-                [InlineKeyboardButton("Назад", callback_data=f"articles_{project_id}")]
-            ])
             groups_state[chat_id] = "projects"
-            await update.message.reply_text(
-                f"✅ Файл статьи успешно добавлен: {os.path.basename(save_path)}",
-                reply_markup=back_button
-            )
 
+            await update.message.reply_text(ADD_ARTICLE_FILE, reply_markup=make_back_keyboard("articles", project_id))
         elif update.message.text:
             text = update.message.text.strip()
 
             if text.startswith("http://") or text.startswith("https://"):
                 add_article_to_group(project_id, text, kind="link")
-                back_button = InlineKeyboardMarkup([
-                    [InlineKeyboardButton("Назад", callback_data=f"articles_{project_id}")]
-                ])
                 groups_state[chat_id] = "projects"
-                await update.message.reply_text(
-                    "✅ Ссылка на статью успешно добавлена.",
-                    reply_markup=back_button
-                )
+
+                await update.message.reply_text(ADD_ARTICLE_LINK, reply_markup=make_back_keyboard("articles", project_id))
             else:
-                await update.message.reply_text(
-                    "⚠️ Похоже, вы отправили не ссылку. Пожалуйста, пришлите корректную ссылку, начинающуюся с http:// или https:// \nили пришлите файл"
-                )
+                await update.message.reply_text(RESEND_LINK)
         else:
-            await update.message.reply_text("⚠️ Пожалуйста, пришлите файл или ссылку для добавления статьи.")
+            await update.message.reply_text(SEND_LINK_OR_FILE)
     else:
         return
 
@@ -189,210 +156,130 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
     await query.answer()
     data = query.data
 
-    print(data)
-
     if data.startswith("project_"):
         project_id = int(data.split("_")[-1])
         text = get_text_for_project(project_id)
 
-        keyboard = [
-            [
-                InlineKeyboardButton("Задачи", callback_data=f"tasks_{project_id}"),
-                InlineKeyboardButton("Дедлайны", callback_data=f"deadlines_{project_id}")
-            ],
-            [
-                InlineKeyboardButton("Файлы", callback_data=f"files_{project_id}"),
-                InlineKeyboardButton("Настройки", callback_data=f"settings_{project_id}")
-            ],
-            [
-                InlineKeyboardButton("Выйти в меню", callback_data="main_menu")
-            ]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-
         if text:
-            await query.message.reply_text(
-            text=text,
-            parse_mode="HTML",
-            reply_markup=reply_markup
-        )
+            await query.message.reply_text(text=text, parse_mode="HTML", reply_markup=make_project_keyboard(project_id))
         else:
-            await query.message.reply_text("Проект не найден или был удалён.")
+            await query.message.reply_text(PROJECT_NOT_FOUND)
             return
     elif data.startswith("settings_"):
         project_id, name = await extract_project_info(data, query)
-        await query.message.reply_text(
-            f"Настройки проекта {name}",
-            reply_markup= InlineKeyboardMarkup(
-                [
-                    [InlineKeyboardButton("Изменить название", callback_data=f"edit_name_{project_id}")],
-                    [InlineKeyboardButton("Удалить проект", callback_data=f"delete_{project_id}")],
-                    [InlineKeyboardButton("Назад", callback_data=f"project_{project_id}")]
-                ]
-            )
-        )
+
+        await query.message.reply_text(PROJECT_SETTINGS.format(name=name), reply_markup=make_settings_keyboard(make_settings_keyboard))
     elif data.startswith("files_"):
         project_id, name = await extract_project_info(data, query)
-        await query.message.reply_text(
-            "Выберите тип файлов:",
-            reply_markup= InlineKeyboardMarkup(
-                [
-                    [InlineKeyboardButton("Статьи", callback_data=f"articles_{project_id}")],
-                    [InlineKeyboardButton("Файл ВКР", callback_data=f"vkr_{project_id}")],
-                    [InlineKeyboardButton("Прочие файлы", callback_data=f"files_{project_id}")],
-                    [InlineKeyboardButton("Назад", callback_data=f"project_{project_id}")]
-                ]
-            )
-        )
+
+        await query.message.reply_text(SELECT_FILE_TYPE, reply_markup=make_files_keyboard(make_files_keyboard))
     elif data.startswith("deadlines_"):
         return
     elif data.startswith("tasks_"):
         return
     elif data.startswith("delete_"):
         project_id, name = await extract_project_info(data, query)
-        await query.message.reply_text(
-            f"Вы уверены что хотите удалить проект {name}?",
-            reply_markup= InlineKeyboardMarkup(
-                [
-                    [InlineKeyboardButton("Да", callback_data=f"confirmed_delete_{project_id}")],
-                    [InlineKeyboardButton("Нет", callback_data=f"settings_{project_id}")]
-                ]
-            )
-        )
+
+        await query.message.reply_text(CONFIRMED_DELETE_PROJECT.FORMAT(name=name), reply_markup=make_confirmed_delete_keyboard(project_id))
     elif data.startswith("confirmed_delete_"):
         chat_id = query.message.chat_id
         project_id, name = await extract_project_info(data, query)
         delete_group(project_id)
-        await return_to_menu(update, context, "Проект был удален, можете продолжить работу в меню")
+
+        await return_to_menu(update, context, PROJECT_DELETED)
         return
     elif data.startswith("edit_name_"):
         chat_id = query.message.chat_id
         project_id, name = await extract_project_info(data, query)
         groups_state[chat_id] = f"edit_name_{project_id}"
-        await query.message.reply_text(
-            f"Введите новое название для проекта {name}"
-        )
+
+        await query.message.reply_text(ENTER_NEW_PROJECT_NAME.format(name=name))
     elif data.startswith("vkr_"):
         chat_id = query.message.chat_id
         project_id, name = await extract_project_info(data, query)
-
         group = get_group_by_id(project_id)
+        
         if not group:
-            await query.message.reply_text("❌ Проект не найден или был удалён.")
+            await query.message.reply_text(PROJECT_NOT_FOUND)
             return
-
         vkr_list = group.get("vkr", [])
-        add_buttons = InlineKeyboardMarkup([
-            [InlineKeyboardButton("Добавить", callback_data=f"add_vkr_{project_id}")],
-            [InlineKeyboardButton("Назад", callback_data=f"files_{project_id}")]
-        ])
-
-        replace_buttons = InlineKeyboardMarkup([
-            [InlineKeyboardButton("Заменить", callback_data=f"add_vkr_{project_id}")],
-            [InlineKeyboardButton("Назад", callback_data=f"files_{project_id}")]
-        ])
 
         if vkr_list:
             vkr_item = vkr_list[0]
 
             if vkr_item["type"] == "link":
-                text = f"📎 Ссылка на ВКР:\n{vkr_item['value']}"
-                await query.message.reply_text(text, reply_markup=replace_buttons)
+                await query.message.reply_text(
+                    VKR_LINK.format(link=vkr_item['value']), 
+                    reply_markup=make_replace_keyboard("vkr", project_id)
+                )
             else:
                 file_path = vkr_item["value"]
+
                 if os.path.exists(file_path):
-                    await query.message.reply_text("📄 Ваш текущий файл ВКР:")
+                    await query.message.reply_text(CURRENT_VKR_LINK)
                     await context.bot.send_document(
-                        chat_id=query.message.chat.id,
-                        document=InputFile(file_path, filename=os.path.basename(file_path)),
-                        reply_markup=replace_buttons
+                        chat_id=query.message.chat.id, 
+                        document=InputFile(file_path, filename=os.path.basename(file_path)), 
+                        reply_markup=make_replace_keyboard("vkr", project_id)
                     )
                 else:
-                    await query.message.reply_text(
-                        "⚠️ Файл ВКР не найден.",
-                        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Назад", callback_data=f"files_{project_id}")]])
-                    )
+                    await query.message.reply_text(NOT_FOUND_VKR_FILE, reply_markup=make_back_keyboard("files", project_id))
         else:
-            await query.message.reply_text(
-                "Файл ВКР отсутствует",
-                reply_markup=add_buttons
-            )
+            await query.message.reply_text(NOT_VKR_FILE, reply_markup=make_add_keyboard("vkr", project_id))
     elif data.startswith("add_vkr_"):
         chat_id = query.message.chat_id
         project_id, name = await extract_project_info(data, query)
         groups_state[chat_id] = f"add_vkr_{project_id}"
-        await query.message.reply_text("Добавьте файл или пришлите ссылку.\nОбратите внимание, что это заменит прошлый файл без возможности вернуть его. Если нужно сохранить старый файл — лучше перейдите в раздел прочие файлы.")
+        await query.message.reply_text(SEND_LINK_OR_FILE_WITH_ATTENTION)
     elif data.startswith("articles_"):
         chat_id = query.message.chat.id
         project_id, name = await extract_project_info(data, query)
-
         group = get_group_by_id(project_id)
+
         if not group:
-            await query.message.reply_text("❌ Проект не найден или был удалён.")
+            await query.message.reply_text(PROJECT_NOT_FOUND)
             return
-
         articles_list = group.get("articles", [])
-
-        add_buttons = InlineKeyboardMarkup([
-            [InlineKeyboardButton("Добавить", callback_data=f"add_article_{project_id}")],
-            [InlineKeyboardButton("Назад", callback_data=f"files_{project_id}")]
-        ])
-
 
         if articles_list:
             links = []
             files = []
 
-            # Разделяем по типу
             for item in articles_list:
                 if item["type"] == "link":
                     links.append(item["value"])
                 elif item["type"] == "file":
                     files.append(item["value"])
-
-            # Отправляем текст только если есть ссылки
             if links:
-                links_text = "📎 Статьи:\n" + "\n".join([f"{idx+1}. {link}" for idx, link in enumerate(links)])
+                links_text = ARTICLES + "\n".join([f"{idx+1}. {link}" for idx, link in enumerate(links)])
+                
                 await query.message.reply_text(links_text)
-
-            # Отправляем файлы через get_file
             if files:
                 for file_path in files:
-                    file_bytes = get_file(file_path)  # возвращает bytes или None
+                    file_bytes = get_file(file_path)
+
                     if file_bytes:
                         await context.bot.send_document(
                             chat_id=query.message.chat.id,
                             document=InputFile(BytesIO(file_bytes), filename=os.path.basename(file_path))
                         )
                     else:
-                        await query.message.reply_text(f"⚠️ Файл не найден: {file_path}")
-
-            # Кнопки в конце
+                        await query.message.reply_text(NOT_FOUND_FILE)
             await context.bot.send_message(
                 chat_id=query.message.chat.id,
-                text="Выберите действие после того, как закончите работу с файлами",
-                reply_markup=add_buttons
+                text=SELECT_BUTTON_AFTER_WORK_WITH_FILES,
+                reply_markup=make_add_keyboard("files", project_id)
             )
-
         else:
-            await query.message.reply_text(
-                "Статей пока нет.",
-                reply_markup=add_buttons
-            )
-
-
-
-
+            await query.message.reply_text(NO_ARTICLES, reply_markup=make_add_keyboard("files", project_id))
     elif data.startswith("add_article_"):
             chat_id = query.message.chat_id
             project_id, name = await extract_project_info(data, query)
             groups_state[chat_id] = f"add_article_{project_id}"
-            await query.message.reply_text("Добавьте файл или пришлите ссылку.")
-    # elif data.startswith("project_"):
-    #     await return_to_menu(update, context, "Работа с проектом завершена")
-    #     return
+            
+            await query.message.reply_text(SEND_LINK_OR_FILE)
     elif data == "main_menu":
-        await return_to_menu(update, context, "Работа с проектом завершена")
+        await return_to_menu(update, context, END_OF_WORK)
         return
     else:
         return
@@ -402,10 +289,10 @@ async def extract_project_info(data: str, query) -> tuple[int | None, str | None
     group = get_group_by_id(project_id)
 
     if not group:
-        await query.message.reply_text("Проект не найден или был удалён.")
+        await query.message.reply_text(PROJECT_NOT_FOUND)
         return None, None
 
-    name = group.get("name", "Без названия")
+    name = group.get("name", NO_NAME)
     return project_id, name
 
 async def return_to_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str):
@@ -423,14 +310,14 @@ def get_text_for_project(project_id: int) -> str | None:
     if not group:
         return None
 
-    name = group.get("name", "Без названия")
+    name = group.get("name", NO_NAME)
     created_at = group.get("created_at", "")
     teacher_id = group.get("teacher_id")
     student_id = group.get("student_id")
     teacher = get_user_by_id(teacher_id) if teacher_id else None
     student = get_user_by_id(student_id) if student_id else None
-    teacher_name = teacher["full_name"] if teacher else "Неизвестный руководитель"
-    student_name = student["full_name"] if student else "Неизвестный студент"
+    teacher_name = teacher["full_name"] if teacher else NO_TEACHER
+    student_name = student["full_name"] if student else NO_STUDENT
 
     try:
         task_count = len(json.loads(group.get("tasks", "{}")))
@@ -442,12 +329,11 @@ def get_text_for_project(project_id: int) -> str | None:
     except Exception:
         deadline_count = 0
 
-    return (
-        f"<b>{name}</b>\n\n"
-        f"Руководитель: {teacher_name}\n"
-        f"Студент: {student_name}\n"
-        f"Создан: "
-        f"{created_at.strftime('%d.%m.%Y') if isinstance(created_at, datetime) else created_at}\n\n"
-        f"📋 Актуальных задач: {task_count}\n"
-        f"⏰ Актуальных дедлайнов: {deadline_count}"
+    return format_project(
+        name=name,
+        teacher_name=teacher_name,
+        student_name=student_name,
+        created_at=created_at,
+        task_count=task_count,
+        deadline_count=deadline_count
     )
