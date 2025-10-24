@@ -270,10 +270,10 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
             await context.bot.send_message(
                 chat_id=query.message.chat.id,
                 text=SELECT_BUTTON_AFTER_WORK_WITH_FILES,
-                reply_markup=make_add_keyboard("files", project_id)
+                reply_markup=make_add_keyboard("article", project_id)
             )
         else:
-            await query.message.reply_text(NO_ARTICLES, reply_markup=make_add_keyboard("files", project_id))
+            await query.message.reply_text(NO_ARTICLES, reply_markup=make_add_keyboard("article", project_id))
     elif data.startswith("add_article_"):
             chat_id = query.message.chat_id
             project_id, name = await extract_project_info(data, query)
