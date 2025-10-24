@@ -34,7 +34,7 @@ def make_files_keyboard(project_id):
                 [
                     [InlineKeyboardButton("Статьи", callback_data=f"articles_{project_id}")],
                     [InlineKeyboardButton("Файл ВКР", callback_data=f"vkr_{project_id}")],
-                    [InlineKeyboardButton("Прочие файлы", callback_data=f"files_{project_id}")],
+                    [InlineKeyboardButton("Прочие файлы", callback_data=f"another_files_{project_id}")],
                     [InlineKeyboardButton("Назад", callback_data=f"project_{project_id}")]
                 ]
             )

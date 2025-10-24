@@ -216,12 +216,13 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
                 )
             else:
                 file_path = vkr_item["value"]
+                file_bytes = get_file(file_path)
 
-                if os.path.exists(file_path):
+                if file_bytes:
                     await query.message.reply_text(CURRENT_VKR_LINK)
                     await context.bot.send_document(
                         chat_id=query.message.chat.id, 
-                        document=InputFile(file_path, filename=os.path.basename(file_path)), 
+                        document=InputFile(BytesIO(file_bytes), filename=os.path.basename(file_path)), 
                         reply_markup=make_replace_keyboard("vkr", project_id)
                     )
                 else:
@@ -266,7 +267,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
                             document=InputFile(BytesIO(file_bytes), filename=os.path.basename(file_path))
                         )
                     else:
-                        await query.message.reply_text(NOT_FOUND_FILE)
+                        await query.message.reply_text(NOT_FOUND_FILE, reply_markup=make_back_keyboard("files", project_id))
             await context.bot.send_message(
                 chat_id=query.message.chat.id,
                 text=SELECT_BUTTON_AFTER_WORK_WITH_FILES,
