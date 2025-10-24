@@ -1,6 +1,8 @@
 import json
 import os
+import uuid
 from datetime import datetime
+from datetime import date
 from db.connection import conn
 
 def get_group_by_id(group_id: int) -> dict | None:
@@ -129,12 +131,50 @@ def add_vkr_to_group(group_id: int, value: str, kind: str = "file"):
         conn.commit()
 
 def add_task_to_group(group_id: int, task_name: str, description: str):
+    task_id = str(uuid.uuid4())
+    new_task = {
+        "name": task_name,
+        "description": description,
+        "done": False,
+        "created_at": date.today().isoformat()
+    }
+
     with conn.cursor() as cursor:
         cursor.execute("SELECT tasks FROM groups WHERE id = %s;", (group_id,))
-        tasks = cursor.fetchone()[0] or {}
-        tasks[task_name] = description
-        cursor.execute("UPDATE groups SET tasks = %s WHERE id = %s;", (json.dumps(tasks), group_id))
+        row = cursor.fetchone()
+        tasks = row[0] or {}
+
+        if isinstance(tasks, str):
+            tasks = json.loads(tasks)
+
+        tasks[task_id] = new_task
+        cursor.execute(
+            "UPDATE groups SET tasks = %s WHERE id = %s;",
+            (json.dumps(tasks), group_id)
+        )
         conn.commit()
+    return task_id
+
+def set_task_status(group_id: int, task_id: str, done: bool):
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT tasks FROM groups WHERE id = %s;", (group_id,))
+        row = cursor.fetchone()
+
+        if not row or not row[0]:
+            return False
+        tasks = row[0]
+
+        if isinstance(tasks, str):
+            tasks = json.loads(tasks)
+        if task_id not in tasks:
+            return False
+        tasks[task_id]["done"] = done
+        cursor.execute(
+            "UPDATE groups SET tasks = %s WHERE id = %s;",
+            (json.dumps(tasks), group_id)
+        )
+        conn.commit()
+    return True
 
 def delete_task_from_group(group_id: int, task_name: str):
     with conn.cursor() as cursor:

@@ -212,7 +212,53 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
     elif data.startswith("deadlines_"):
         return
     elif data.startswith("tasks_"):
-        return
+        chat_id = query.message.chat_id
+        project_id, name = await extract_project_info(data, query)
+        group = get_group_by_id(project_id)
+        tasks = group.get("tasks") or {}
+
+        if isinstance(tasks, str):
+            tasks = json.loads(tasks)
+        if not tasks:
+            await update.message.reply_text("Нет активных задач.")
+            return
+        role = get_user_role(chat_id)
+
+        if role == "student":
+            for task_id, task in tasks.items():
+                if task.get("done"):
+                    continue
+                text = f"*Задача:* {task.get('name', '')}\n{task.get('description', '')}"
+                keyboard = [[InlineKeyboardButton("Выполнено", callback_data=f"complete_{task_id}_{project_id}")]]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+
+                await update.message.reply_text(text, reply_markup=reply_markup, parse_mode="Markdown")
+            end_keyboard = [
+                [InlineKeyboardButton("Показать выполненные задачи", callback_data=f"completed_tasks_{project_id}")],
+                [InlineKeyboardButton("Назад", callback_data=f"project_{project_id}")]
+            ]
+            await update.message.reply_text(
+                "Выберите действие:",
+                reply_markup=InlineKeyboardMarkup(end_keyboard)
+            )
+        else:
+            lines = []
+            for task_id, task in tasks.items():
+                status = "✅" if task.get("done") else "⏳"
+                lines.append(f"{status} *{task.get('name', '')}*")
+            text = "\n".join(lines)
+            keyboard = [
+                [InlineKeyboardButton("Добавить задачу", callback_data=f"add_task_{project_id}")],
+                [InlineKeyboardButton("Напомнить студенту о задачах", callback_data=f"remind_{project_id}")],
+                [InlineKeyboardButton("Назад", callback_data=f"project_{project_id}")]
+            ]
+
+            await update.message.reply_text(
+                text or "Нет задач.",
+                reply_markup=InlineKeyboardMarkup(keyboard),
+                parse_mode="Markdown"
+            )
+
     elif data.startswith("delete_"):
         project_id, name = await extract_project_info(data, query)
 
