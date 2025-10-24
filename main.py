@@ -16,7 +16,7 @@ def main():
     app.add_handler(CommandHandler("view_requests", view_requests))
     app.add_handler(CommandHandler("search", search))
     app.add_handler(CommandHandler("projects", projects))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
+    app.add_handler(MessageHandler((filters.TEXT | filters.Document.ALL) & ~filters.COMMAND, handle_text))
     app.add_handler(CallbackQueryHandler(handle_callback))
 
     print("🚀 Бот запущен...")
