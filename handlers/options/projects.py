@@ -220,7 +220,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         if isinstance(tasks, str):
             tasks = json.loads(tasks)
         if not tasks:
-            await query.message.reply_text("Нет активных задач.")
+            await query.message.reply_text("Нет активных задач.", reply_markup=make_back_keyboard("project", project_id))
             return
         role = get_user_role(chat_id)
 
