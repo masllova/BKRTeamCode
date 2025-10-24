@@ -9,7 +9,8 @@ from db.queries_groups import (
     delete_group, 
     update_group_name, 
     add_vkr_to_group,
-    add_article_to_group
+    add_article_to_group,
+    add_file_to_group
 )
 from texts.projects import (
     NO_PROJECTS, SELECT_PROJECT, RENAME_SUCCESS, PROJECT_NOT_FOUND, UPDATE_VKR_FILE_SUCCESS,
@@ -165,7 +166,7 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
                 counter += 1
 
             await file_obj.download_to_drive(save_path)
-            add_article_to_group(project_id, save_path, kind="file")
+            add_file_to_group(project_id, save_path, kind="file")
             groups_state[chat_id] = "projects"
 
             await update.message.reply_text(ADD_FILE, reply_markup=make_back_keyboard("another_files_", project_id))
@@ -173,7 +174,7 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
             text = update.message.text.strip()
 
             if text.startswith("http://") or text.startswith("https://"):
-                add_article_to_group(project_id, text, kind="link")
+                add_file_to_group(project_id, text, kind="link")
                 groups_state[chat_id] = "projects"
 
                 await update.message.reply_text(ADD_LINK, reply_markup=make_back_keyboard("another_files_", project_id))
