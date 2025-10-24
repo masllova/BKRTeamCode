@@ -337,25 +337,46 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         ])
 
         if articles_list:
-            for idx, item in enumerate(articles_list, 1):
+            links = []
+            files = []
+
+            for item in articles_list:
                 if item["type"] == "link":
-                    text = f"📎 Статья #{idx} (ссылка):\n{item['value']}"
-                    await query.message.reply_text(text)
-                else:  # type == file
-                    file_path = item["value"]
+                    links.append(item["value"])
+                elif item["type"] == "file":
+                    files.append(item["value"])
+
+            text_parts = []
+
+            if links:
+                links_text = "📎 *Ссылки:*\n" + "\n".join([f"{idx+1}. {link}" for idx, link in enumerate(links)])
+                text_parts.append(links_text)
+
+            if files:
+                files_text = "📄 *Файлы:*"
+                text_parts.append(files_text)
+
+            text_message = "\n\n".join(text_parts)
+            await query.message.reply_text(
+                text_message,
+                parse_mode="Markdown",
+            )
+
+            if files:
+                for file_path in files:
                     if os.path.exists(file_path):
-                        await query.message.reply_text(f"📄 Статья #{idx} (файл):")
                         await context.bot.send_document(
                             chat_id=query.message.chat.id,
                             document=InputFile(file_path, filename=os.path.basename(file_path))
                         )
                     else:
-                        await query.message.reply_text(f"⚠️ Статья #{idx} (файл) не найдена.")
+                        await query.message.reply_text(f"⚠️ Файл не найден: {file_path}")
 
-            # После всех элементов добавляем кнопки
-            await query.message.reply_text("Вы можете добавить новую статью:", reply_markup=add_buttons)
+            await query.message.reply_text(
+                " ",
+                reply_markup=add_buttons
+            )
         else:
-            # Список пустой
             await query.message.reply_text(
                 "Статей пока нет.",
                 reply_markup=add_buttons
