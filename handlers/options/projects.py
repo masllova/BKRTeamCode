@@ -329,7 +329,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
             links = []
             files = []
 
-            for item in articles_list:
+            for item in files_list:
                 if item["type"] == "link":
                     links.append(item["value"])
                 elif item["type"] == "file":
