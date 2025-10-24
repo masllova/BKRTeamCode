@@ -85,6 +85,7 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
             await update.message.reply_text("Проект не найден или был удалён.")
             return
     elif state.startswith("add_vkr_"):
+        print(update.message)
         project_id = int(state.split("_")[-1])
 
         # Если прислали файл
