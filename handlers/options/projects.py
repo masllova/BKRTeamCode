@@ -349,17 +349,16 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
             text_parts = []
 
             if links:
-                links_text = "📎 *Ссылки:*\n" + "\n".join([f"{idx+1}. {link}" for idx, link in enumerate(links)])
+                links_text = "📎 Ссылки:\n" + "\n".join([f"{idx+1}. {link}" for idx, link in enumerate(links)])
                 text_parts.append(links_text)
 
             if files:
-                files_text = "📄 *Файлы:*"
+                files_text = "📄 Файлы:"
                 text_parts.append(files_text)
 
             text_message = "\n\n".join(text_parts)
             await query.message.reply_text(
-                text_message,
-                parse_mode="Markdown",
+                text_message
             )
 
             if files:
