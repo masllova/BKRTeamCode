@@ -89,6 +89,7 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
 
         # Если прислали файл
         if update.message.document:
+            print("we have file")
             file = update.message.document
             file_name = file.file_name
 
