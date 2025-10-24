@@ -156,6 +156,8 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
     await query.answer()
     data = query.data
 
+    print(data)
+
     if data.startswith("project_"):
         project_id = int(data.split("_")[-1])
         text = get_text_for_project(project_id)
