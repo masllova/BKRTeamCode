@@ -180,7 +180,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
     elif data.startswith("delete_"):
         project_id, name = await extract_project_info(data, query)
 
-        await query.message.reply_text(CONFIRMED_DELETE_PROJECT.FORMAT(name=name), reply_markup=make_confirmed_delete_keyboard(project_id))
+        await query.message.reply_text(CONFIRMED_DELETE_PROJECT.format(name=name), reply_markup=make_confirmed_delete_keyboard(project_id))
     elif data.startswith("confirmed_delete_"):
         chat_id = query.message.chat_id
         project_id, name = await extract_project_info(data, query)
