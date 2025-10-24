@@ -1,5 +1,6 @@
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, InputFile
 from telegram.ext import ContextTypes
+from io import BytesIO
 import os
 import json
 from datetime import datetime
@@ -11,8 +12,10 @@ from db.queries_groups import (
     add_article_to_group
 )
 from db.queries_users import get_user_group_ids, get_user_by_id, user_exists, get_user_role
+from db.queries_files import get_file
 from texts.menu import NOT_REGISTERED
 from keyboards.menu import get_menu_keyboard
+
 
 groups_state = {}
 
@@ -130,7 +133,6 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
     elif state.startswith("add_article_"):
         project_id = int(state.split("_")[-1])
 
-        # Если прислали файл
         if update.message.document:
             file = update.message.document
             file_name = file.file_name
@@ -336,50 +338,51 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
             [InlineKeyboardButton("Назад", callback_data=f"files_{project_id}")]
         ])
 
+
         if articles_list:
             links = []
             files = []
 
+            # Разделяем по типу
             for item in articles_list:
                 if item["type"] == "link":
                     links.append(item["value"])
                 elif item["type"] == "file":
                     files.append(item["value"])
 
-            text_parts = []
-
+            # Отправляем текст только если есть ссылки
             if links:
-                links_text = "📎 Ссылки:\n" + "\n".join([f"{idx+1}. {link}" for idx, link in enumerate(links)])
-                text_parts.append(links_text)
+                links_text = "📎 Статьи:\n" + "\n".join([f"{idx+1}. {link}" for idx, link in enumerate(links)])
+                await query.message.reply_text(links_text)
 
-            if files:
-                files_text = "📄 Файлы:"
-                text_parts.append(files_text)
-
-            text_message = "\n\n".join(text_parts)
-            await query.message.reply_text(
-                text_message
-            )
-
+            # Отправляем файлы через get_file
             if files:
                 for file_path in files:
-                    if os.path.exists(file_path):
+                    file_bytes = get_file(file_path)  # возвращает bytes или None
+                    if file_bytes:
                         await context.bot.send_document(
                             chat_id=query.message.chat.id,
-                            document=InputFile(file_path, filename=os.path.basename(file_path))
+                            document=InputFile(BytesIO(file_bytes), filename=os.path.basename(file_path))
                         )
                     else:
                         await query.message.reply_text(f"⚠️ Файл не найден: {file_path}")
 
-            await query.message.reply_text(
-                "Выберите действие после того, как закончите работу с файлами",
+            # Кнопки в конце
+            await context.bot.send_message(
+                chat_id=query.message.chat.id,
+                text="Выберите действие после того, как закончите работу с файлами",
                 reply_markup=add_buttons
             )
+
         else:
             await query.message.reply_text(
                 "Статей пока нет.",
                 reply_markup=add_buttons
             )
+
+
+
+
     elif data.startswith("add_article_"):
             chat_id = query.message.chat_id
             project_id, name = await extract_project_info(data, query)
