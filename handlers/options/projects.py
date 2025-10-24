@@ -1,4 +1,4 @@
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, InputFile
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, InputFile, InputMediaDocument
 from telegram.ext import ContextTypes
 import os
 import json
