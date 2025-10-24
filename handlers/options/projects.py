@@ -220,7 +220,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         if isinstance(tasks, str):
             tasks = json.loads(tasks)
         if not tasks:
-            await update.message.reply_text("Нет активных задач.")
+            await query.message.reply_text("Нет активных задач.")
             return
         role = get_user_role(chat_id)
 
@@ -232,12 +232,12 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
                 keyboard = [[InlineKeyboardButton("Выполнено", callback_data=f"complete_{task_id}_{project_id}")]]
                 reply_markup = InlineKeyboardMarkup(keyboard)
 
-                await update.message.reply_text(text, reply_markup=reply_markup, parse_mode="Markdown")
+                await query.message.reply_text(text, reply_markup=reply_markup, parse_mode="Markdown")
             end_keyboard = [
                 [InlineKeyboardButton("Показать выполненные задачи", callback_data=f"completed_tasks_{project_id}")],
                 [InlineKeyboardButton("Назад", callback_data=f"project_{project_id}")]
             ]
-            await update.message.reply_text(
+            await query.message.reply_text(
                 "Выберите действие:",
                 reply_markup=InlineKeyboardMarkup(end_keyboard)
             )
@@ -253,7 +253,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
                 [InlineKeyboardButton("Назад", callback_data=f"project_{project_id}")]
             ]
 
-            await update.message.reply_text(
+            await query.message.reply_text(
                 text or "Нет задач.",
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 parse_mode="Markdown"
