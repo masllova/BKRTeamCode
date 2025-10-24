@@ -50,10 +50,10 @@ async def projects(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
-    text = update.message.text.strip()
     state = groups_state.get(chat_id)
 
     if state.startswith("edit_name_"):
+        text = update.message.text.strip()
         project_id = int(state.split("_")[-1])
         update_group_name(project_id, text)
         groups_state[chat_id] = "projects"
