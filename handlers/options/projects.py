@@ -17,7 +17,8 @@ from texts.projects import (
     SEND_LINK_OR_FILE_WITH_ATTENTION, PROJECT_SETTINGS, SELECT_FILE_TYPE, CONFIRMED_DELETE_PROJECT,
     PROJECT_DELETED, ENTER_NEW_PROJECT_NAME, VKR_LINK, CURRENT_VKR_LINK, NOT_FOUND_VKR_FILE,
     NOT_FOUND_FILE, NOT_VKR_FILE, ARTICLES, SELECT_BUTTON_AFTER_WORK_WITH_FILES, NO_ARTICLES,
-    END_OF_WORK, NO_NAME, NO_TEACHER, NO_STUDENT, format_project
+    END_OF_WORK, NO_NAME, NO_TEACHER, NO_STUDENT, ANOTHER_FILES, NO_ANOTHER_FILES, ADD_FILE,
+    ADD_LINK, format_project
 )
 from keyboards.projects import (
     make_project_keyboard, make_back_keyboard, make_settings_keyboard, make_files_keyboard,
@@ -99,7 +100,7 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
             add_vkr_to_group(project_id, save_path, kind="file")
             groups_state[chat_id] = "projects"
 
-            # отправить файл как с ссылкой + там файл не файл а путь + кнопку заменить можно сюда тоже
+            # кнопку заменить можно сюда тоже
             await update.message.reply_text(UPDATE_VKR_FILE_SUCCESS, reply_markup=make_back_keyboard("vkr", project_id))
         elif update.message.text:
             text = update.message.text.strip()
@@ -147,9 +148,41 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
                 await update.message.reply_text(RESEND_LINK)
         else:
             await update.message.reply_text(SEND_LINK_OR_FILE)
+    elif state.startswith("add_another_files_"):
+        project_id = int(state.split("_")[-1])
+
+        if update.message.document:
+            file = update.message.document
+            file_name = file.file_name
+            file_obj = await file.get_file()
+            os.makedirs("files/files", exist_ok=True)
+            save_path = os.path.join("files/files", file_name)
+            base, ext = os.path.splitext(file_name)
+            counter = 1
+
+            while os.path.exists(save_path):
+                save_path = os.path.join("files/files", f"{base}_{counter}{ext}")
+                counter += 1
+
+            await file_obj.download_to_drive(save_path)
+            add_article_to_group(project_id, save_path, kind="file")
+            groups_state[chat_id] = "projects"
+
+            await update.message.reply_text(ADD_FILE, reply_markup=make_back_keyboard("another_files_", project_id))
+        elif update.message.text:
+            text = update.message.text.strip()
+
+            if text.startswith("http://") or text.startswith("https://"):
+                add_article_to_group(project_id, text, kind="link")
+                groups_state[chat_id] = "projects"
+
+                await update.message.reply_text(ADD_LINK, reply_markup=make_back_keyboard("another_files_", project_id))
+            else:
+                await update.message.reply_text(RESEND_LINK)
+        else:
+            await update.message.reply_text(SEND_LINK_OR_FILE)
     else:
         return
-
 
 async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -276,11 +309,58 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         else:
             await query.message.reply_text(NO_ARTICLES, reply_markup=make_add_keyboard("article", project_id))
     elif data.startswith("add_article_"):
-            chat_id = query.message.chat_id
-            project_id, name = await extract_project_info(data, query)
-            groups_state[chat_id] = f"add_article_{project_id}"
+        chat_id = query.message.chat_id
+        project_id, name = await extract_project_info(data, query)
+        groups_state[chat_id] = f"add_article_{project_id}"
 
-            await query.message.reply_text(SEND_LINK_OR_FILE)
+        await query.message.reply_text(SEND_LINK_OR_FILE)
+    elif data.startswith("another_files_"):
+        chat_id = query.message.chat.id
+        project_id, name = await extract_project_info(data, query)
+        group = get_group_by_id(project_id)
+
+        if not group:
+            await query.message.reply_text(PROJECT_NOT_FOUND)
+            return
+        files_list = group.get("files", [])
+
+        if files_list:
+            links = []
+            files = []
+
+            for item in articles_list:
+                if item["type"] == "link":
+                    links.append(item["value"])
+                elif item["type"] == "file":
+                    files.append(item["value"])
+            if links:
+                links_text = ANOTHER_FILES + "\n".join([f"{idx+1}. {link}" for idx, link in enumerate(links)])
+                
+                await query.message.reply_text(links_text)
+            if files:
+                for file_path in files:
+                    file_bytes = get_file(file_path)
+
+                    if file_bytes:
+                        await context.bot.send_document(
+                            chat_id=query.message.chat.id,
+                            document=InputFile(BytesIO(file_bytes), filename=os.path.basename(file_path))
+                        )
+                    else:
+                        await query.message.reply_text(NOT_FOUND_FILE, reply_markup=make_back_keyboard("files", project_id))
+            await context.bot.send_message(
+                chat_id=query.message.chat.id,
+                text=SELECT_BUTTON_AFTER_WORK_WITH_FILES,
+                reply_markup=make_add_keyboard("another_files", project_id)
+            )
+        else:
+            await query.message.reply_text(NO_ANOTHER_FILES, reply_markup=make_add_keyboard("another_files", project_id))
+    elif data.startswith("add_another_files_"):
+        chat_id = query.message.chat_id
+        project_id, name = await extract_project_info(data, query)
+        groups_state[chat_id] = f"add_another_files_{project_id}"
+
+        await query.message.reply_text(SEND_LINK_OR_FILE)
     elif data == "main_menu":
         await return_to_menu(update, context, END_OF_WORK)
         return
