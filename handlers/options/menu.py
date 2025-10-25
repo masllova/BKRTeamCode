@@ -145,7 +145,7 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # ДЛЯ ТЕСТА
         keyboard = get_menu_keyboard("teacher") 
 
-        await update.message.reply_text(text, reply_markup=keyboard)
+        await update.message.reply_text(text, reply_markup=keyboard, parse_mode="Markdown")
         return
     elif command == "stats":
         group_ids = get_user_group_ids(chat_id)
@@ -157,14 +157,14 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "/requests - Посмотреть заявки"
             )
             return
-        text = "📊 Статистика\n\n"
+        text = "📊 Статистика"
 
         for id in group_ids:
             group = get_group_by_id(id)
 
             if group:
-                text += f"\n\n📁 Проект: {group["name"]}"
-                text += f"\n📎 Файлы:"
+                text += f"\n\n*Проект*: {group["name"]}"
+                text += f"\n\n📎 Файлы:"
                 file_count = 0
                 vkr_list = group.get("vkr", [])
                 
@@ -187,7 +187,7 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 if isinstance(tasks, str):
                     tasks = json.loads(tasks)
                 if tasks:
-                    text += "\n📌 Задачи:"
+                    text += "\n\n📌 Задачи:"
                     text += f"- Всего: {len(tasks)}"
                     text += f"- Выполнено: {sum(1 for task in tasks.values() if not task.get("done", False))}"
 
@@ -211,8 +211,7 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         continue
 
                 if upcoming:
-                    text += "\n📅  *Ближайшие дедлайны:*\n"
-                    text += f"\n📁 {group['name']}"
+                    text += "\n📅 Ближайшие дедлайны:"
                     for date, deadline_text in sorted(upcoming):
                         text += f"\n{date.strftime('%d.%m.%Y')} — {deadline_text}"
                 
@@ -221,11 +220,11 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 student = get_user_by_id(student_id) if student_id else None
                 student_name = student["full_name"] if student else NO_STUDENT
 
-                text += f"\n 👤 Студент: {student_name}"
+                text += f"\n\n👤 Студент: {student_name}"
                 # добавить контакты если заполнены
         role = get_user_role(chat_id)
         keyboard = get_menu_keyboard(role) 
-        await update.message.reply_text(text, reply_markup=keyboard)
+        await update.message.reply_text(text, reply_markup=keyboard, parse_mode="Markdown")
         return
     else:
         await update.message.reply_text(NOT_REGISTERED)
