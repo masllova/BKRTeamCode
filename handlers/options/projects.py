@@ -291,7 +291,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         task_id = "_".join(parts[1:-1])
         set_task_status(project_id, task_id, True)
 
-        await query.edit_message_text(text="Задача удалена")
+        await query.edit_message_text(text="Задача выполнена")
     elif data.startswith("delete_"):
         project_id, name = await extract_project_info(data, query)
 
