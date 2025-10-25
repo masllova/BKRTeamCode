@@ -2,9 +2,9 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from keyboards.menu import BUTTON_TO_COMMAND, get_menu_keyboard
-from db.queries_users import user_exists, get_user_role, get_user_group_ids
+from db.queries_users import user_exists, get_user_role, get_user_group_ids, get_user_by_id
 from db.queries_groups import get_group_by_id
-from texts.menu import MENU_AVAILABLE, NOT_REGISTERED
+from texts.menu import MENU_AVAILABLE, NOT_REGISTERED, NO_STUDENT
 from texts.search import SEARCH_STUDENT, SEARCH_TEACHER
 from handlers.options.search import search_state
 from handlers.options.requests import requests_state
@@ -95,7 +95,7 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         if not group_ids:
             await update.message.reply_text(
-                "У тебя пока нет проектов по которым можно собрать журнал событий.\n"
+                "У Вас пока нет проектов по которым можно собрать журнал событий.\n"
                 "/search - Найти претендента на общий проект\n"
                 "/requests - Посмотреть заявки"
             )
@@ -148,6 +148,84 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(text, reply_markup=keyboard)
         return
     elif command == "stats":
+        group_ids = get_user_group_ids(chat_id)
+
+        if not group_ids:
+            await update.message.reply_text(
+                "У Вас пока нет проектов по которым можно собрать статистику.\n"
+                "/search - Найти претендента на общий проект\n"
+                "/requests - Посмотреть заявки"
+            )
+            return
+        text = "📊 Статистика\n\n"
+
+        for id in group_ids:
+            group = get_group_by_id(id)
+
+            if group:
+                text += f"\n\n📁 Проект: {group["name"]}"
+                text += f"\n📎 Файлы:"
+                file_count = 0
+                vkr_list = group.get("vkr", [])
+                
+                if vkr_list:
+                    file_count +=1
+                    text += "\nФайл ВКР прикреплен"
+                else:
+                    text += "\nФайл ВКР отсутсвует"
+                files_list = group.get("files", [])
+
+                if files_list:
+                    text += f"\nКоличесво прочих файлов: {len(files_list)}"
+                articles_list = group.get("articles", [])
+
+                if articles_list:
+                    text += f"\nКоличесво статей: {len(articles_list)}"
+
+                tasks = group.get("tasks") or {}
+
+                if isinstance(tasks, str):
+                    tasks = json.loads(tasks)
+                if tasks:
+                    text += "\n📌 Задачи:"
+                    text += f"- Всего: {len(tasks)}"
+                    text += f"- Выполнено: {sum(1 for task in tasks.values() if not task.get("done", False))}"
+
+                deadlines = group.get("deadlines") or {}
+                if isinstance(deadlines, str):
+                    deadlines = json.loads(deadlines)
+
+                today = datetime.today().date()
+                limit_date = today + timedelta(days=28)
+
+                # собираем дедлайны в пределах 28 дней
+                upcoming = []
+                for d in deadlines.values():
+                    date_str = d.get("date", "")
+                    text_str = d.get("text", "")
+                    try:
+                        deadline_date = datetime.strptime(date_str, "%d.%m.%Y").date()
+                        if today <= deadline_date <= limit_date:
+                            upcoming.append((deadline_date, text_str))
+                    except ValueError:
+                        continue
+
+                if upcoming:
+                    text += "\n📅  *Ближайшие дедлайны:*\n"
+                    text += f"\n📁 {group['name']}"
+                    for date, deadline_text in sorted(upcoming):
+                        text += f"\n{date.strftime('%d.%m.%Y')} — {deadline_text}"
+                
+
+                student_id = group.get("student_id")
+                student = get_user_by_id(student_id) if student_id else None
+                student_name = student["full_name"] if student else NO_STUDENT
+
+                text += f"\n 👤 Студент: {}]"
+                # добавить контакты если заполнены
+        role = get_user_role(chat_id)
+        keyboard = get_menu_keyboard(role) 
+        await update.message.reply_text(text, reply_markup=keyboard)
         return
     else:
         await update.message.reply_text(NOT_REGISTERED)
