@@ -21,11 +21,14 @@ from texts.projects import (
     PROJECT_DELETED, ENTER_NEW_PROJECT_NAME, VKR_LINK, CURRENT_VKR_LINK, NOT_FOUND_VKR_FILE,
     NOT_FOUND_FILE, NOT_VKR_FILE, ARTICLES, SELECT_BUTTON_AFTER_WORK_WITH_FILES, NO_ARTICLES,
     END_OF_WORK, NO_NAME, NO_TEACHER, NO_STUDENT, ANOTHER_FILES, NO_ANOTHER_FILES, ADD_FILE,
-    ADD_LINK, ADD_TASK_SUCCESS, ENTER_NEW_TASK, format_project
+    ADD_LINK, ADD_TASK_SUCCESS, ENTER_NEW_TASK, TASK, TASKS_LIST, NO_ACTUAL_TASKS, SELECT_ACTION,
+    COMPLETE_TASK, COMPLETE_TASKS, ACTUAL_TASKS, NO_TASKS, format_project
 )
 from keyboards.projects import (
     make_project_keyboard, make_back_keyboard, make_settings_keyboard, make_files_keyboard,
-    make_add_keyboard, make_replace_keyboard, make_confirmed_delete_keyboard
+    make_add_keyboard, make_replace_keyboard, make_confirmed_delete_keyboard,
+    make_complete_task_keyboard, make_complete_student_tasks_keyboard,
+    make_teacher_tasks_empty_keyboard, make_teacher_tasks_keyboard
 )
 from db.queries_users import get_user_group_ids, get_user_by_id, user_exists, get_user_role
 from db.queries_files import get_file
@@ -228,34 +231,20 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
 
         if role == "student":
             if not tasks:
-                await query.message.reply_text("Нет активных задач.", reply_markup=make_back_keyboard("project", project_id))
+                await query.message.reply_text(NO_ACTUAL_TASKS, reply_markup=make_back_keyboard("project", project_id))
                 return
-            await query.message.reply_text("Список актуальных задач")
+            await query.message.reply_text(TASKS_LIST)
             for task_id, task in tasks.items():
                 if task.get("done"):
                     continue
-                text = f"*Задача:* {task.get('name', '')}"
-                keyboard = [[InlineKeyboardButton("Выполнено", callback_data=f"complete_{task_id}_{project_id}")]]
-                reply_markup = InlineKeyboardMarkup(keyboard)
+                text = TASK.format(task=task.get('name', ''))
+                reply_markup = InlineKeyboardMarkup(make_complete_task_keyboard(task_id, project_id))
 
                 await query.message.reply_text(text, reply_markup=reply_markup, parse_mode="Markdown")
-            end_keyboard = [
-                [InlineKeyboardButton("Показать выполненные задачи", callback_data=f"completed_tasks_{project_id}")],
-                [InlineKeyboardButton("Назад", callback_data=f"project_{project_id}")]
-            ]
-            await query.message.reply_text(
-                "Выберите действие:",
-                reply_markup=InlineKeyboardMarkup(end_keyboard)
-            )
+            await query.message.reply_text(SELECT_ACTION, reply_markup=make_complete_student_tasks_keyboard(project_id))
         else:
             if not tasks:
-                await query.message.reply_text(
-                    "Нет активных задач.", 
-                    reply_markup=InlineKeyboardMarkup([
-                        [InlineKeyboardButton("Добавить задачу", callback_data=f"add_task_{project_id}")],
-                        [InlineKeyboardButton("Назад", callback_data=f"project_{project_id}")]
-                    ])
-                )
+                await query.message.reply_text(NO_ACTUAL_TASKS, reply_markup=make_teacher_tasks_empty_keyboard(project_id))
                 return
             active_lines = []
             done_lines = []
@@ -269,20 +258,13 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
 
             parts = []
             if active_lines:
-                parts.append("Актуальные задачи:\n" + "\n".join(active_lines))
+                parts.append(ACTUAL_TASKS + "\n".join(active_lines))
             if done_lines:
-                parts.append("Выполненные задачи:\n" + "\n".join(done_lines))
+                parts.append(COMPLETE_TASKS + "\n".join(done_lines))
 
-            text = "\n\n".join(parts) if parts else "Нет задач."
-
-            keyboard = [
-                [InlineKeyboardButton("Добавить задачу", callback_data=f"add_task_{project_id}")],
-                [InlineKeyboardButton("Напомнить студенту о задачах", callback_data=f"remind_{project_id}")],
-                [InlineKeyboardButton("Назад", callback_data=f"project_{project_id}")]
-            ]
             await query.message.reply_text(
-                text,
-                reply_markup=InlineKeyboardMarkup(keyboard),
+                "\n\n".join(parts) if parts else NO_TASKS,
+                reply_markup=make_teacher_tasks_keyboard(project_id),
                 parse_mode="Markdown"
             )
     elif data.startswith("complete_"):
@@ -291,7 +273,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         task_id = "_".join(parts[1:-1])
         set_task_status(project_id, task_id, True)
 
-        await query.edit_message_text(text="Задача выполнена")
+        await query.edit_message_text(text=COMPLETE_TASK)
     elif data.startswith("delete_"):
         project_id, name = await extract_project_info(data, query)
 
@@ -330,7 +312,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
             if vkr_item["type"] == "link":
                 await query.message.reply_text(
                     VKR_LINK.format(link=vkr_item['value']), 
-                    reply_markup=make_replace_keyboard("vkr", project_id)
+                    reply_markup=make_replace_keyboard(project_id)
                 )
             else:
                 file_path = vkr_item["value"]
@@ -341,7 +323,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
                     await context.bot.send_document(
                         chat_id=query.message.chat.id, 
                         document=InputFile(BytesIO(file_bytes), filename=os.path.basename(file_path)), 
-                        reply_markup=make_replace_keyboard("vkr", project_id)
+                        reply_markup=make_replace_keyboard(project_id)
                     )
                 else:
                     await query.message.reply_text(NOT_FOUND_VKR_FILE, reply_markup=make_back_keyboard("files", project_id))

@@ -35,6 +35,14 @@ END_OF_WORK = "Работа с проектом завершена"
 NO_NAME = "Без названия"
 NO_TEACHER = "Неизвестный руководитель"
 NO_STUDENT = "Неизвестный студент"
+NO_ACTUAL_TASKS = "Нет активных задач."
+NO_TASKS = "Нет задач"
+TASKS_LIST = "Список актуальных задач"
+TASK = "*Задача:* {task}"
+SELECT_ACTION = "Выберите действие:"
+COMPLETE_TASK = "Задача выполнена"
+COMPLETE_TASKS = "Выполненные задачи:\n"
+ACTUAL_TASKS = "Актуальные задачи:\n"
 
 def format_project(
     name: str,
