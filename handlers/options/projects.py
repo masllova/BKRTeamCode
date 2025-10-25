@@ -97,11 +97,11 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
 
         groups_state[chat_id] = "projects"
 
-        await update.message.reply_text(
+        await context.bot.send_message(
             chat_id=student["telegram_id"],
             text=REMIND.format(teacher_name=teacher_name, project_name=name, comment=text)
         )
-        await update.message.reply_text(
+        await context.bot.send_message(
             chat_id=teacher["telegram_id"],
             text=REMIND_SUCCSESS,
             reply_markup=make_back_keyboard("tasks", project_id)
