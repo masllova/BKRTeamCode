@@ -257,13 +257,11 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
                     ])
                 )
                 return
-
-
             active_lines = []
             done_lines = []
 
             for task_id, task in tasks.items():
-                line = f"*Задача:* {task.get('name', '')}"
+                line = f"- {task.get('name', '')}"
                 if task.get('done'):
                     done_lines.append(line)
                 else:
@@ -287,7 +285,13 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 parse_mode="Markdown"
             )
+    elif data.startswith("complete_"):
+        parts = data.split("_")
+        project_id = int(parts[-1])
+        task_id = "_".join(parts[1:-1])
+        set_task_status(project_id, task_id, True)
 
+        await query.edit_message_text(text="Задача удалена")
     elif data.startswith("delete_"):
         project_id, name = await extract_project_info(data, query)
 
@@ -298,7 +302,6 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         delete_group(project_id)
 
         await return_to_menu(update, context, PROJECT_DELETED)
-        return
     elif data.startswith("edit_name_"):
         chat_id = query.message.chat_id
         project_id, name = await extract_project_info(data, query)
