@@ -295,7 +295,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
                 await update.effective_message.reply_text(NO_DEADLINE, reply_markup=make_teacher_deadline_keyboard(project_id))
             return
         lines = [DEADLINE_LIST]
-        
+
         for d in deadlines.values():
             date = d.get("date", "")
             text = d.get("text", "")
@@ -597,7 +597,16 @@ def get_text_for_project(project_id: int) -> str | None:
     student = get_user_by_id(student_id) if student_id else None
     teacher_name = teacher["full_name"] if teacher else NO_TEACHER
     student_name = student["full_name"] if student else NO_STUDENT
-    deadline_count = len(group.get("deadlines") or {})
+    deadlines = group.get("deadlines") or {}
+
+    if isinstance(deadlines, str):
+        deadlines = json.loads(deadlines)
+    today = datetime.today().date()
+    active_deadlines = [
+        d for d in deadlines.values()
+        if datetime.strptime(d.get("deadline", ""), "%d.%m.%Y").date() >= today
+    ]
+    deadline_count = len(active_deadlines)
     tasks = group.get("tasks") or {}
 
     if isinstance(tasks, str):

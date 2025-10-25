@@ -4,11 +4,12 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from keyboards.menu import BUTTON_TO_COMMAND, get_menu_keyboard
 from db.queries_users import user_exists, get_user_role, get_user_group_ids
 from db.queries_groups import get_group_by_id
-from texts.menu import MENU_AVAILABLE, NOT_REGISTERED, MENU_RESPONSES
+from texts.menu import MENU_AVAILABLE, NOT_REGISTERED
 from texts.search import SEARCH_STUDENT, SEARCH_TEACHER
 from handlers.options.search import search_state
 from handlers.options.requests import requests_state
 from handlers.options.projects import groups_state, groups_data_temp
+from datetime import datetime, timedelta
 import json
 
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -48,7 +49,7 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             await update.message.reply_text(SEARCH_STUDENT)
         return
-    if command == "requests":
+    elif command == "requests":
         requests_state[chat_id] = "awaiting_type"
         
         keyboard = InlineKeyboardMarkup([
@@ -61,8 +62,7 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=keyboard
         )
         return
-    
-    if command == "projects":
+    elif command == "projects":
         groups_state[chat_id] = "projects"
         group_ids = get_user_group_ids(chat_id)
 
@@ -118,19 +118,36 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             continue
                         text += f"\n- {task.get('name', '')}"
                 deadlines = group.get("deadlines") or {}
+                if isinstance(deadlines, str):
+                    deadlines = json.loads(deadlines)
 
-                if deadlines:
-                    text += "\n\n📅  Ближайшие дедлайны:\n"
-                    text += f"\n📁{group["name"]}"
+                today = datetime.today().date()
+                limit_date = today + timedelta(days=28)
 
-                    for d in deadlines.values():
-                        date = d.get("date", "")
-                        deadline_text = d.get("text", "")
-                        text += (f"\n{date} — {deadline_text}")
+                # собираем дедлайны в пределах 28 дней
+                upcoming = []
+                for d in deadlines.values():
+                    date_str = d.get("date", "")
+                    text_str = d.get("text", "")
+                    try:
+                        deadline_date = datetime.strptime(date_str, "%d.%m.%Y").date()
+                        if today <= deadline_date <= limit_date:
+                            upcoming.append((deadline_date, text_str))
+                    except ValueError:
+                        continue
+
+                if upcoming:
+                    text += "\n\n📅  *Ближайшие дедлайны:*\n"
+                    text += f"\n📁 {group['name']}"
+                    for date, deadline_text in sorted(upcoming):
+                        text += f"\n{date.strftime('%d.%m.%Y')} — {deadline_text}"
         role = get_user_role(chat_id)
-        keyboard = get_menu_keyboard(role)
+        # ДЛЯ ТЕСТА
+        keyboard = get_menu_keyboard("teacher") 
 
         await update.message.reply_text(text, reply_markup=keyboard)
+        return
+    elif command == "stats":
         return
     else:
         await update.message.reply_text(NOT_REGISTERED)
