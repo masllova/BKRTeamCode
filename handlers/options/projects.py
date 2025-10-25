@@ -596,17 +596,9 @@ def get_text_for_project(project_id: int) -> str | None:
     student = get_user_by_id(student_id) if student_id else None
     teacher_name = teacher["full_name"] if teacher else NO_TEACHER
     student_name = student["full_name"] if student else NO_STUDENT
-
-    try:
-        task_count = len(json.loads(group.get("tasks", "{}")))
-    except Exception:
-        task_count = 0
-
-    try:
-        deadline_count = len(json.loads(group.get("deadlines", "{}")))
-    except Exception:
-        deadline_count = 0
-
+    deadline_count = len(group.get("deadlines") or {})
+    task_count = len(group.get("tasks") or {})
+        
     return format_project(
         name=name,
         teacher_name=teacher_name,
