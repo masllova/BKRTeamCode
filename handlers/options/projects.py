@@ -23,7 +23,7 @@ from texts.projects import (
     END_OF_WORK, NO_NAME, NO_TEACHER, NO_STUDENT, ANOTHER_FILES, NO_ANOTHER_FILES, ADD_FILE,
     ADD_LINK, ADD_TASK_SUCCESS, ENTER_NEW_TASK, TASK, TASKS_LIST, NO_ACTUAL_TASKS, SELECT_ACTION,
     COMPLETE_TASK, COMPLETE_TASKS, ACTUAL_TASKS, NO_TASKS, NO_COMPLETE_TASKS, COMPLETE_TASK_LIST,
-    ACTUAL_TASK, format_project
+    ACTUAL_TASK, ENTER_COMMENT, REMIND, format_project
 )
 from keyboards.projects import (
     make_project_keyboard, make_back_keyboard, make_settings_keyboard, make_files_keyboard,
@@ -84,6 +84,20 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
         else:
             await update.message.reply_text(PROJECT_NOT_FOUND)
             return
+    if state.startswith("remind_"):
+        text = update.message.text.strip()
+        project_id = int(state.split("_")[-1])
+        group = get_group_by_id(project_id)
+        name = group.get("name", NO_NAME)
+        teacher_id = group.get("teacher_id")
+        teacher = get_user_by_id(teacher_id) if teacher_id else None
+        teacher_name = teacher["full_name"] if teacher else NO_TEACHER
+
+        await update.message.reply_text(REMIND.format(
+            teacher_name=teacher_name,
+            project_name=name,
+            comment=text
+        ))
     if state.startswith("add_task_"):
         text = update.message.text.strip()
         project_id = int(state.split("_")[-1])
@@ -111,7 +125,6 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
             add_vkr_to_group(project_id, save_path, kind="file")
             groups_state[chat_id] = "projects"
 
-            # кнопку заменить можно сюда тоже
             await update.message.reply_text(UPDATE_VKR_FILE_SUCCESS, reply_markup=make_back_keyboard("vkr", project_id))
         elif update.message.text:
             text = update.message.text.strip()
@@ -120,7 +133,6 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
                 add_vkr_to_group(project_id, text, kind="link")
                 groups_state[chat_id] = "projects"
 
-                # кнопку замнить можно сюда тоже
                 await update.message.reply_text(UPDATE_VKR_LINK_SUCCESS, reply_markup=make_back_keyboard("vkr", project_id))
             else:
                 await update.message.reply_text(RESEND_LINK)
@@ -312,6 +324,15 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         delete_group(project_id)
 
         await return_to_menu(update, context, PROJECT_DELETED)
+    elif data.startswith("remind_"):
+        project_id, name = await extract_project_info(data, query)
+        group = get_group_by_id(project_id)
+        student_id = group.get("student_id")
+        student = get_user_by_id(student_id) if student_id else None
+        student_name = student["full_name"] if student else NO_STUDENT
+        groups_state[chat_id] = f"remind_{project_id}"
+
+        await query.message.reply_text(ENTER_COMMENT.format(student_name))
     elif data.startswith("edit_name_"):
         chat_id = query.message.chat_id
         project_id, name = await extract_project_info(data, query)
