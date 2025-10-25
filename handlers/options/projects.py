@@ -82,7 +82,7 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
     if state.startswith("add_task_"):
         text = update.message.text.strip()
         project_id = int(state.split("_")[-1])
-        update_group_name(project_id, text)
+        add_task_to_group(project_id, text)
         groups_state[chat_id] = "projects"
 
         await update.message.reply_text(ADD_TASK_SUCCESS, reply_markup=make_back_keyboard("tasks", project_id))
