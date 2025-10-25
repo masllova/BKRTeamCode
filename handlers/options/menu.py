@@ -131,8 +131,7 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         keyboard = get_menu_keyboard(role)
 
         await update.message.reply_text(text, reply_markup=keyboard)
+        return
     else:
         await update.message.reply_text(NOT_REGISTERED)
-    
-    response = MENU_RESPONSES.get(command, MENU_RESPONSES["unknown"])
-    await update.message.reply_text(response)
+        return
