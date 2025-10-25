@@ -90,14 +90,12 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         keyboard = InlineKeyboardMarkup(buttons)
         await update.message.reply_text(text, reply_markup=keyboard)
         return
-    else:
-        await update.message.reply_text(NOT_REGISTERED)
-    if command == "journal":
+    elif command == "journal":
         group_ids = get_user_group_ids(chat_id)
 
         if not group_ids:
             await update.message.reply_text(
-                "У тебя пока нет проектов по которым мы могли бы собрать журнал событий.\n"
+                "У тебя пока нет проектов по которым можно собрать журнал событий.\n"
                 "/search - Найти претендента на общий проект\n"
                 "/requests - Посмотреть заявки"
             )
@@ -127,11 +125,14 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
                     for d in deadlines.values():
                         date = d.get("date", "")
-                        text = d.get("text", "")
-                        text += (f"\n{date} — {text}")
+                        deadline_text = d.get("text", "")
+                        text += (f"\n{date} — {deadline_text}")
         role = get_user_role(chat_id)
         keyboard = get_menu_keyboard(role)
 
         await update.message.reply_text(text, reply_markup=keyboard)
+    else:
+        await update.message.reply_text(NOT_REGISTERED)
+    
     response = MENU_RESPONSES.get(command, MENU_RESPONSES["unknown"])
     await update.message.reply_text(response)
