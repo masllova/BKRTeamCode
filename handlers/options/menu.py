@@ -100,7 +100,7 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "/requests - Посмотреть заявки"
             )
             return
-        text = "🗂️ Журнал задач и дедлайнов"
+        text = "🗂️ Журнал задач и дедлайнов\n\n"
 
         for id in group_ids:
             group = get_group_by_id(id)
@@ -120,8 +120,8 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 deadlines = group.get("deadlines") or {}
 
                 if deadlines:
-                    text += "\n\n📅  Ближайшие дедлайны:"
-                    text += f"📁\n{group["name"]}"
+                    text += "\n\n📅  Ближайшие дедлайны:\n"
+                    text += f"\n📁{group["name"]}"
 
                     for d in deadlines.values():
                         date = d.get("date", "")
