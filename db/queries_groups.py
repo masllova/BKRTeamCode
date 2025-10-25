@@ -152,7 +152,6 @@ def add_task_to_group(group_id: int, task_name: str):
             (json.dumps(tasks), group_id)
         )
         conn.commit()
-    return task_id
 
 def set_task_status(group_id: int, task_id: str, done: bool):
     with conn.cursor() as cursor:
@@ -175,28 +174,25 @@ def set_task_status(group_id: int, task_id: str, done: bool):
         conn.commit()
     return True
 
-def delete_task_from_group(group_id: int, task_name: str):
-    with conn.cursor() as cursor:
-        cursor.execute("SELECT tasks FROM groups WHERE id = %s;", (group_id,))
-        tasks = cursor.fetchone()[0] or {}
-        if task_name in tasks:
-            tasks.pop(task_name)
-            cursor.execute("UPDATE groups SET tasks = %s WHERE id = %s;", (json.dumps(tasks), group_id))
-            conn.commit()
+def add_deadline_to_group(group_id: int, text: str, deadline: str):
+    deadline_id = str(uuid.uuid4())
+    new_deadline = {
+        "text": text,
+        "date": deadline
+    }
 
-def add_deadline_to_group(group_id: int, task_name: str, deadline: str):
     with conn.cursor() as cursor:
         cursor.execute("SELECT deadlines FROM groups WHERE id = %s;", (group_id,))
-        deadlines = cursor.fetchone()[0] or {}
-        deadlines[task_name] = deadline
-        cursor.execute("UPDATE groups SET deadlines = %s WHERE id = %s;", (json.dumps(deadlines), group_id))
+        row = cursor.fetchone()
+        deadlines = row[0] or {}
+
+        if isinstance(deadlines, str):
+            deadlines = json.loads(deadlines)
+
+        deadlines[deadline_id] = new_deadline
+
+        cursor.execute(
+            "UPDATE groups SET deadlines = %s WHERE id = %s;",
+            (json.dumps(deadlines), group_id)
+        )
         conn.commit()
-
-def delete_deadline_from_group(group_id: int, task_name: str):
-    with conn.cursor() as cursor:
-        cursor.execute("SELECT deadlines FROM groups WHERE id = %s;", (group_id,))
-        deadlines = cursor.fetchone()[0] or {}
-        if task_name in deadlines:
-            deadlines.pop(task_name)
-            cursor.execute("UPDATE groups SET deadlines = %s WHERE id = %s;", (json.dumps(deadlines), group_id))
-            conn.commit()
