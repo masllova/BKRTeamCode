@@ -13,7 +13,8 @@ from db.queries_groups import (
     add_article_to_group,
     add_file_to_group,
     add_task_to_group,
-    set_task_status
+    set_task_status,
+    add_deadline_to_group
 )
 from texts.projects import (
     NO_PROJECTS, SELECT_PROJECT, RENAME_SUCCESS, PROJECT_NOT_FOUND, UPDATE_VKR_FILE_SUCCESS,
@@ -33,7 +34,7 @@ from keyboards.projects import (
     make_complete_task_keyboard, make_complete_student_tasks_keyboard,
     make_teacher_tasks_empty_keyboard, make_teacher_tasks_keyboard,
     make_actual_student_tasks_keyboard, make_actual_task_keyboard,
-    make_teacher_deadline_keyboard, add_deadline_to_group
+    make_teacher_deadline_keyboard
 )
 from db.queries_users import get_user_group_ids, get_user_by_id, user_exists, get_user_role
 from db.queries_files import get_file
