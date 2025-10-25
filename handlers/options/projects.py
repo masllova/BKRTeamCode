@@ -605,7 +605,9 @@ def get_text_for_project(project_id: int) -> str | None:
     active_deadlines = []
 
     for d in deadlines.values():
+        print(d)
         date_str = d.get("deadline", "")
+        print(date_str)
         if not date_str:
             continue  # пропускаем, если даты нет
         try:
