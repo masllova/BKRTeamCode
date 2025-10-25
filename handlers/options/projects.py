@@ -331,6 +331,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
 
         await return_to_menu(update, context, PROJECT_DELETED)
     elif data.startswith("remind_"):
+        chat_id = query.message.chat_id
         project_id, name = await extract_project_info(data, query)
         group = get_group_by_id(project_id)
         student_id = group.get("student_id")
