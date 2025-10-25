@@ -278,6 +278,10 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
 
         await query.edit_message_text(text=COMPLETE_TASK)
     elif data.startswith("completed_tasks_"):
+        project_id, name = await extract_project_info(data, query)
+        group = get_group_by_id(project_id)
+        tasks = group.get("tasks") or {}
+
         if not tasks:
             await query.message.reply_text(NO_COMPLETE_TASKS, reply_markup=make_back_keyboard("project", project_id))
             return
