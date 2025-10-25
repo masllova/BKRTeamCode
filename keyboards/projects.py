@@ -77,7 +77,7 @@ def make_complete_student_tasks_keyboard(project_id):
 
 def make_actual_student_tasks_keyboard(project_id):
     return InlineKeyboardMarkup([
-            [InlineKeyboardButton("Показать актуальные задачи", callback_data=f"completed_tasks_{project_id}")],
+            [InlineKeyboardButton("Показать актуальные задачи", callback_data=f"tasks_{project_id}")],
             [InlineKeyboardButton("Назад", callback_data=f"project_{project_id}")]
         ])
 
