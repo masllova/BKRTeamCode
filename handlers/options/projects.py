@@ -597,7 +597,11 @@ def get_text_for_project(project_id: int) -> str | None:
     teacher_name = teacher["full_name"] if teacher else NO_TEACHER
     student_name = student["full_name"] if student else NO_STUDENT
     deadline_count = len(group.get("deadlines") or {})
-    task_count = len(group.get("tasks") or {})
+    tasks = group.get("tasks") or {}
+
+    if isinstance(tasks, str):
+        tasks = json.loads(tasks)
+    task_count = sum(1 for task in tasks.values() if not task.get("done", False))
         
     return format_project(
         name=name,
