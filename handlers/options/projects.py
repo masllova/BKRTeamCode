@@ -295,6 +295,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
                 await update.effective_message.reply_text(NO_DEADLINE, reply_markup=make_teacher_deadline_keyboard(project_id))
             return
         lines = [DEADLINE_LIST]
+        
         for d in deadlines.values():
             date = d.get("date", "")
             text = d.get("text", "")

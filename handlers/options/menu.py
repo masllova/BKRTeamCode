@@ -8,7 +8,8 @@ from texts.menu import MENU_AVAILABLE, NOT_REGISTERED, MENU_RESPONSES
 from texts.search import SEARCH_STUDENT, SEARCH_TEACHER
 from handlers.options.search import search_state
 from handlers.options.requests import requests_state
-from handlers.options.projects import groups_state
+from handlers.options.projects import groups_state, groups_data_temp
+import json
 
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
@@ -32,6 +33,7 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     search_state.pop(chat_id, None)
     requests_state.pop(chat_id, None)
     groups_state.pop(chat_id, None)
+    groups_data_temp.pop(chat_id, None)
 
     if command == "search":
         search_state[chat_id] = {
@@ -90,6 +92,46 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     else:
         await update.message.reply_text(NOT_REGISTERED)
+    if command == "journal":
+        group_ids = get_user_group_ids(chat_id)
 
+        if not group_ids:
+            await update.message.reply_text(
+                "У тебя пока нет проектов по которым мы могли бы собрать журнал событий.\n"
+                "/search - Найти претендента на общий проект\n"
+                "/requests - Посмотреть заявки"
+            )
+            return
+        text = "🗂️ Журнал задач и дедлайнов"
+
+        for id in group_ids:
+            group = get_group_by_id(id)
+
+            if group:
+                tasks = group.get("tasks") or {}
+
+                if isinstance(tasks, str):
+                    tasks = json.loads(tasks)
+                if tasks:
+                    text += f"\n📁 Проект: {group["name"]}"
+
+                    for _, task in tasks.items():
+                        if task.get("done"):
+                            continue
+                        text += f"\n- {task.get('name', '')}"
+                deadlines = group.get("deadlines") or {}
+
+                if deadlines:
+                    text += "\n\n📅  Ближайшие дедлайны:"
+                    text += f"📁\n{group["name"]}"
+
+                    for d in deadlines.values():
+                        date = d.get("date", "")
+                        text = d.get("text", "")
+                        text += (f"\n{date} — {text}")
+        role = get_user_role(chat_id)
+        keyboard = get_menu_keyboard(role)
+
+        await update.message.reply_text(text, reply_markup=keyboard)
     response = MENU_RESPONSES.get(command, MENU_RESPONSES["unknown"])
     await update.message.reply_text(response)
