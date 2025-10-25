@@ -22,13 +22,15 @@ from texts.projects import (
     NOT_FOUND_FILE, NOT_VKR_FILE, ARTICLES, SELECT_BUTTON_AFTER_WORK_WITH_FILES, NO_ARTICLES,
     END_OF_WORK, NO_NAME, NO_TEACHER, NO_STUDENT, ANOTHER_FILES, NO_ANOTHER_FILES, ADD_FILE,
     ADD_LINK, ADD_TASK_SUCCESS, ENTER_NEW_TASK, TASK, TASKS_LIST, NO_ACTUAL_TASKS, SELECT_ACTION,
-    COMPLETE_TASK, COMPLETE_TASKS, ACTUAL_TASKS, NO_TASKS, format_project
+    COMPLETE_TASK, COMPLETE_TASKS, ACTUAL_TASKS, NO_TASKS, NO_COMPLETE_TASKS, COMPLETE_TASK_LIST,
+    format_project
 )
 from keyboards.projects import (
     make_project_keyboard, make_back_keyboard, make_settings_keyboard, make_files_keyboard,
     make_add_keyboard, make_replace_keyboard, make_confirmed_delete_keyboard,
     make_complete_task_keyboard, make_complete_student_tasks_keyboard,
-    make_teacher_tasks_empty_keyboard, make_teacher_tasks_keyboard
+    make_teacher_tasks_empty_keyboard, make_teacher_tasks_keyboard,
+    make_actual_student_tasks_keyboard, make_actual_task_keyboard
 )
 from db.queries_users import get_user_group_ids, get_user_by_id, user_exists, get_user_role
 from db.queries_files import get_file
@@ -237,10 +239,11 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
             for task_id, task in tasks.items():
                 if task.get("done"):
                     continue
-                text = TASK.format(task=task.get('name', ''))
-                reply_markup = InlineKeyboardMarkup(make_complete_task_keyboard(task_id, project_id))
-
-                await query.message.reply_text(text, reply_markup=reply_markup, parse_mode="Markdown")
+                await query.message.reply_text(
+                    TASK.format(task=task.get('name', '')), 
+                    reply_markup=make_complete_task_keyboard(task_id, project_id), 
+                    parse_mode="Markdown"
+                )
             await query.message.reply_text(SELECT_ACTION, reply_markup=make_complete_student_tasks_keyboard(project_id))
         else:
             if not tasks:
@@ -274,6 +277,20 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         set_task_status(project_id, task_id, True)
 
         await query.edit_message_text(text=COMPLETE_TASK)
+    elif data.startswith("completed_tasks_"):
+        if not tasks:
+            await query.message.reply_text(NO_COMPLETE_TASKS, reply_markup=make_back_keyboard("project", project_id))
+            return
+        await query.message.reply_text(COMPLETE_TASK_LIST)
+        for task_id, task in tasks.items():
+            if not task.get("done"):
+                continue
+            await query.message.reply_text(
+                TASK.format(task=task.get('name', '')), 
+                reply_markup=make_actual_task_keyboard(task_id, project_id), 
+                parse_mode="Markdown"
+            )
+        await query.message.reply_text(SELECT_ACTION, reply_markup=make_actual_student_tasks_keyboard(project_id))
     elif data.startswith("delete_"):
         project_id, name = await extract_project_info(data, query)
 

@@ -53,9 +53,43 @@ def make_add_keyboard(file_type, project_id):
             [InlineKeyboardButton("Назад", callback_data=f"files_{project_id}")]
         ])
 
-def make_replace_keyboard(file_type, project_id):
+def make_replace_keyboard(project_id):
     return InlineKeyboardMarkup([
             [InlineKeyboardButton("Заменить", callback_data=f"add_vkr_{project_id}")],
             [InlineKeyboardButton("Назад", callback_data=f"files_{project_id}")]
         ])
 
+def make_complete_task_keyboard(task_id, project_id):
+    return InlineKeyboardMarkup([
+            [InlineKeyboardButton("Выполнено", callback_data=f"complete_{task_id}_{project_id}")]
+        ])
+
+def make_actual_task_keyboard(task_id, project_id):
+    return InlineKeyboardMarkup([
+            [InlineKeyboardButton("В работе", callback_data=f"complete_{task_id}_{project_id}")]
+        ])
+
+def make_complete_student_tasks_keyboard(project_id):
+    return InlineKeyboardMarkup([
+            [InlineKeyboardButton("Показать выполненные задачи", callback_data=f"completed_tasks_{project_id}")],
+            [InlineKeyboardButton("Назад", callback_data=f"project_{project_id}")]
+        ])
+
+def make_actual_student_tasks_keyboard(project_id):
+    return InlineKeyboardMarkup([
+            [InlineKeyboardButton("Показать актуальные задачи", callback_data=f"completed_tasks_{project_id}")],
+            [InlineKeyboardButton("Назад", callback_data=f"project_{project_id}")]
+        ])
+
+def make_teacher_tasks_empty_keyboard(project_id):
+    return InlineKeyboardMarkup([
+            [InlineKeyboardButton("Добавить задачу", callback_data=f"add_task_{project_id}")],
+            [InlineKeyboardButton("Назад", callback_data=f"project_{project_id}")]
+        ])
+
+def make_teacher_tasks_keyboard(project_id):
+    return InlineKeyboardMarkup([
+            [InlineKeyboardButton("Добавить задачу", callback_data=f"add_task_{project_id}")],
+            [InlineKeyboardButton("Напомнить студенту о задачах", callback_data=f"remind_{project_id}")],
+            [InlineKeyboardButton("Назад", callback_data=f"project_{project_id}")]
+        ])
