@@ -95,6 +95,8 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
         teacher = get_user_by_id(teacher_id) if teacher_id else None
         teacher_name = teacher["full_name"] if teacher else NO_TEACHER
 
+        groups_state[chat_id] = "projects"
+
         await update.message.reply_text(
             chat_id=student["telegram_id"],
             text=REMIND.format(teacher_name=teacher_name, project_name=name, comment=text)
