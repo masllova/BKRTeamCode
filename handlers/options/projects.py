@@ -10,7 +10,9 @@ from db.queries_groups import (
     update_group_name, 
     add_vkr_to_group,
     add_article_to_group,
-    add_file_to_group
+    add_file_to_group,
+    add_task_to_group,
+    set_task_status
 )
 from texts.projects import (
     NO_PROJECTS, SELECT_PROJECT, RENAME_SUCCESS, PROJECT_NOT_FOUND, UPDATE_VKR_FILE_SUCCESS,
@@ -19,7 +21,7 @@ from texts.projects import (
     PROJECT_DELETED, ENTER_NEW_PROJECT_NAME, VKR_LINK, CURRENT_VKR_LINK, NOT_FOUND_VKR_FILE,
     NOT_FOUND_FILE, NOT_VKR_FILE, ARTICLES, SELECT_BUTTON_AFTER_WORK_WITH_FILES, NO_ARTICLES,
     END_OF_WORK, NO_NAME, NO_TEACHER, NO_STUDENT, ANOTHER_FILES, NO_ANOTHER_FILES, ADD_FILE,
-    ADD_LINK, format_project
+    ADD_LINK, ADD_TASK_SUCCESS, ENTER_NEW_TASK, format_project
 )
 from keyboards.projects import (
     make_project_keyboard, make_back_keyboard, make_settings_keyboard, make_files_keyboard,
@@ -73,14 +75,17 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
         project_text = get_text_for_project(project_id)
 
         if project_text:
-            await update.message.reply_text(
-            text=project_text,
-            parse_mode="HTML",
-            reply_markup=make_project_keyboard(project_id)
-        )
+            await update.message.reply_text(text=project_text, parse_mode="HTML", reply_markup=make_project_keyboard(project_id))
         else:
             await update.message.reply_text(PROJECT_NOT_FOUND)
             return
+    if state.startswith("add_task_"):
+        text = update.message.text.strip()
+        project_id = int(state.split("_")[-1])
+        update_group_name(project_id, text)
+        groups_state[chat_id] = "projects"
+
+        await update.message.reply_text(ADD_TASK_SUCCESS, reply_markup=make_back_keyboard("tasks", project_id))
     elif state.startswith("add_vkr_"):
         project_id = int(state.split("_")[-1])
 
@@ -219,16 +224,16 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
 
         if isinstance(tasks, str):
             tasks = json.loads(tasks)
-        if not tasks:
-            await query.message.reply_text("Нет активных задач.", reply_markup=make_back_keyboard("project", project_id))
-            return
         role = get_user_role(chat_id)
 
         if role == "student":
+            if not tasks:
+                await query.message.reply_text("Нет активных задач.", reply_markup=make_back_keyboard("project", project_id))
+                return
             for task_id, task in tasks.items():
                 if task.get("done"):
                     continue
-                text = f"*Задача:* {task.get('name', '')}\n{task.get('description', '')}"
+                text = f"*Задача:* {task.get('name', '')}"
                 keyboard = [[InlineKeyboardButton("Выполнено", callback_data=f"complete_{task_id}_{project_id}")]]
                 reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -242,6 +247,15 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
                 reply_markup=InlineKeyboardMarkup(end_keyboard)
             )
         else:
+            if not tasks:
+                await query.message.reply_text(
+                    "Нет активных задач.", 
+                    reply_markup=InlineKeyboardMarkup([
+                        [InlineKeyboardButton("Добавить задачу", callback_data=f"add_task_{project_id}")],
+                        [InlineKeyboardButton("Назад", callback_data=f"project_{project_id}")]
+                    ])
+                )
+                return
             lines = []
             for task_id, task in tasks.items():
                 status = "✅" if task.get("done") else "⏳"
@@ -276,6 +290,12 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         groups_state[chat_id] = f"edit_name_{project_id}"
 
         await query.message.reply_text(ENTER_NEW_PROJECT_NAME.format(name=name))
+    elif data.startswith("add_task_"): 
+        chat_id = query.message.chat_id
+        project_id, name = await extract_project_info(data, query)
+        groups_state[chat_id] = f"add_task_{project_id}"
+
+        await query.message.reply_text(ENTER_NEW_TASK)
     elif data.startswith("vkr_"):
         chat_id = query.message.chat_id
         project_id, name = await extract_project_info(data, query)

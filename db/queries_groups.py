@@ -130,11 +130,10 @@ def add_vkr_to_group(group_id: int, value: str, kind: str = "file"):
         cursor.execute("UPDATE groups SET vkr = %s WHERE id = %s", (json.dumps([new_item]), group_id))
         conn.commit()
 
-def add_task_to_group(group_id: int, task_name: str, description: str):
+def add_task_to_group(group_id: int, task_name: str):
     task_id = str(uuid.uuid4())
     new_task = {
         "name": task_name,
-        "description": description,
         "done": False,
         "created_at": date.today().isoformat()
     }
