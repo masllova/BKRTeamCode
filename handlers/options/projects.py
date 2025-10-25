@@ -230,6 +230,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
             if not tasks:
                 await query.message.reply_text("Нет активных задач.", reply_markup=make_back_keyboard("project", project_id))
                 return
+            await query.message.reply_text("Список актуальных задач")
             for task_id, task in tasks.items():
                 if task.get("done"):
                     continue
@@ -256,19 +257,33 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
                     ])
                 )
                 return
-            lines = []
+
+
+            active_lines = []
+            done_lines = []
+
             for task_id, task in tasks.items():
-                status = "✅" if task.get("done") else "⏳"
-                lines.append(f"{status} *{task.get('name', '')}*")
-            text = "\n".join(lines)
+                line = f"*Задача:* {task.get('name', '')}"
+                if task.get('done'):
+                    done_lines.append(line)
+                else:
+                    active_lines.append(line)
+
+            parts = []
+            if active_lines:
+                parts.append("Актуальные задачи:\n" + "\n".join(active_lines))
+            if done_lines:
+                parts.append("Выполненные задачи:\n" + "\n".join(done_lines))
+
+            text = "\n\n".join(parts) if parts else "Нет задач."
+
             keyboard = [
                 [InlineKeyboardButton("Добавить задачу", callback_data=f"add_task_{project_id}")],
                 [InlineKeyboardButton("Напомнить студенту о задачах", callback_data=f"remind_{project_id}")],
                 [InlineKeyboardButton("Назад", callback_data=f"project_{project_id}")]
             ]
-
             await query.message.reply_text(
-                text or "Нет задач.",
+                text,
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 parse_mode="Markdown"
             )
