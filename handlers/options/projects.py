@@ -23,14 +23,15 @@ from texts.projects import (
     END_OF_WORK, NO_NAME, NO_TEACHER, NO_STUDENT, ANOTHER_FILES, NO_ANOTHER_FILES, ADD_FILE,
     ADD_LINK, ADD_TASK_SUCCESS, ENTER_NEW_TASK, TASK, TASKS_LIST, NO_ACTUAL_TASKS, SELECT_ACTION,
     COMPLETE_TASK, COMPLETE_TASKS, ACTUAL_TASKS, NO_TASKS, NO_COMPLETE_TASKS, COMPLETE_TASK_LIST,
-    ACTUAL_TASK, ENTER_COMMENT, REMIND, REMIND_SUCCSESS, format_project
+    ACTUAL_TASK, ENTER_COMMENT, REMIND, REMIND_SUCCSESS, DEADLINE_LIST, NO_DEADLINE, format_project
 )
 from keyboards.projects import (
     make_project_keyboard, make_back_keyboard, make_settings_keyboard, make_files_keyboard,
     make_add_keyboard, make_replace_keyboard, make_confirmed_delete_keyboard,
     make_complete_task_keyboard, make_complete_student_tasks_keyboard,
     make_teacher_tasks_empty_keyboard, make_teacher_tasks_keyboard,
-    make_actual_student_tasks_keyboard, make_actual_task_keyboard
+    make_actual_student_tasks_keyboard, make_actual_task_keyboard,
+    make_teacher_deadline_keyboard
 )
 from db.queries_users import get_user_group_ids, get_user_by_id, user_exists, get_user_role
 from db.queries_files import get_file
@@ -240,7 +241,26 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
 
         await query.message.reply_text(SELECT_FILE_TYPE, reply_markup=make_files_keyboard(project_id))
     elif data.startswith("deadlines_"):
-        return
+        chat_id = query.message.chat_id
+        project_id, name = await extract_project_info(data, query)
+        group = get_group_by_id(project_id)
+        deadlines = group.get("deadlines") or {}
+
+        if not deadlines:
+            await update.effective_message.reply_text(NO_DEADLINE)
+            return
+        role = get_user_role(chat_id)
+        lines = [DEADLINE_LIST]
+        for d in deadlines.values():
+            date = d.get("date", "")
+            text = d.get("text", "")
+            lines.append(f"{date} — {text}")
+        message_text = "\n".join(lines)
+
+        if role == "student":
+            await update.effective_message.reply_text(message_text, reply_markup=make_back_keyboard("project", project_id))
+        else:
+            await update.effective_message.reply_text(message_text, reply_markup=make_teacher_deadline_keyboard(project_id))
     elif data.startswith("tasks_"):
         chat_id = query.message.chat_id
         project_id, name = await extract_project_info(data, query)
