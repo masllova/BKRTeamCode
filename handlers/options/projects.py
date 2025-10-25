@@ -23,7 +23,7 @@ from texts.projects import (
     END_OF_WORK, NO_NAME, NO_TEACHER, NO_STUDENT, ANOTHER_FILES, NO_ANOTHER_FILES, ADD_FILE,
     ADD_LINK, ADD_TASK_SUCCESS, ENTER_NEW_TASK, TASK, TASKS_LIST, NO_ACTUAL_TASKS, SELECT_ACTION,
     COMPLETE_TASK, COMPLETE_TASKS, ACTUAL_TASKS, NO_TASKS, NO_COMPLETE_TASKS, COMPLETE_TASK_LIST,
-    ACTUAL_TASK, ENTER_COMMENT, REMIND, format_project
+    ACTUAL_TASK, ENTER_COMMENT, REMIND, REMIND_SUCCSESS, format_project
 )
 from keyboards.projects import (
     make_project_keyboard, make_back_keyboard, make_settings_keyboard, make_files_keyboard,
@@ -98,6 +98,11 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
         await update.message.reply_text(
             chat_id=student["telegram_id"],
             text=REMIND.format(teacher_name=teacher_name, project_name=name, comment=text)
+        )
+        await update.message.reply_text(
+            chat_id=teacher["telegram_id"],
+            text=REMIND_SUCCSESS,
+            reply_markup=make_back_keyboard("tasks", project_id)
         )
     if state.startswith("add_task_"):
         text = update.message.text.strip()
