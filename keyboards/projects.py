@@ -66,7 +66,7 @@ def make_complete_task_keyboard(task_id, project_id):
 
 def make_actual_task_keyboard(task_id, project_id):
     return InlineKeyboardMarkup([
-            [InlineKeyboardButton("В работе", callback_data=f"complete_{task_id}_{project_id}")]
+            [InlineKeyboardButton("В работе", callback_data=f"actual_{task_id}_{project_id}")]
         ])
 
 def make_complete_student_tasks_keyboard(project_id):

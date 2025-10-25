@@ -43,6 +43,7 @@ COMPLETE_TASK_LIST = "Список выполненых задач"
 TASK = "*Задача:* {task}"
 SELECT_ACTION = "Выберите действие:"
 COMPLETE_TASK = "Задача выполнена"
+ACTUAL_TASK = "Задача в работе"
 COMPLETE_TASKS = "Выполненные задачи:\n"
 ACTUAL_TASKS = "Актуальные задачи:\n"
 
