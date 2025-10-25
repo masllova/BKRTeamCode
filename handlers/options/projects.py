@@ -341,7 +341,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         student_name = student["full_name"] if student else NO_STUDENT
         groups_state[chat_id] = f"remind_{project_id}"
 
-        await query.message.reply_text(ENTER_COMMENT.format(student_name))
+        await query.message.reply_text(ENTER_COMMENT.format(name=student_name))
     elif data.startswith("edit_name_"):
         chat_id = query.message.chat_id
         project_id, name = await extract_project_info(data, query)
