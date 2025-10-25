@@ -245,11 +245,14 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         project_id, name = await extract_project_info(data, query)
         group = get_group_by_id(project_id)
         deadlines = group.get("deadlines") or {}
+        role = get_user_role(chat_id)
 
         if not deadlines:
-            await update.effective_message.reply_text(NO_DEADLINE)
+            if role == "student":
+                await update.effective_message.reply_text(NO_DEADLINE, reply_markup=make_back_keyboard("project", project_id))
+            else:
+                await update.effective_message.reply_text(NO_DEADLINE, reply_markup=make_teacher_deadline_keyboard(project_id))
             return
-        role = get_user_role(chat_id)
         lines = [DEADLINE_LIST]
         for d in deadlines.values():
             date = d.get("date", "")
