@@ -93,3 +93,9 @@ def make_teacher_tasks_keyboard(project_id):
             [InlineKeyboardButton("Напомнить студенту о задачах", callback_data=f"remind_{project_id}")],
             [InlineKeyboardButton("Назад", callback_data=f"project_{project_id}")]
         ])
+
+def make_teacher_deadline_keyboard(project_id):
+    return InlineKeyboardMarkup([
+            [InlineKeyboardButton("Добавить дедлайн", callback_data=f"add_deadline_{project_id}")],
+            [InlineKeyboardButton("Назад", callback_data=f"project_{project_id}")]
+        ])
