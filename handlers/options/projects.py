@@ -2,6 +2,7 @@ from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, InputFi
 from telegram.ext import ContextTypes
 from io import BytesIO
 import os
+import re
 import json
 from datetime import datetime
 from db.queries_groups import (
@@ -23,7 +24,8 @@ from texts.projects import (
     END_OF_WORK, NO_NAME, NO_TEACHER, NO_STUDENT, ANOTHER_FILES, NO_ANOTHER_FILES, ADD_FILE,
     ADD_LINK, ADD_TASK_SUCCESS, ENTER_NEW_TASK, TASK, TASKS_LIST, NO_ACTUAL_TASKS, SELECT_ACTION,
     COMPLETE_TASK, COMPLETE_TASKS, ACTUAL_TASKS, NO_TASKS, NO_COMPLETE_TASKS, COMPLETE_TASK_LIST,
-    ACTUAL_TASK, ENTER_COMMENT, REMIND, REMIND_SUCCSESS, DEADLINE_LIST, NO_DEADLINE, format_project
+    ACTUAL_TASK, ENTER_COMMENT, REMIND, REMIND_SUCCSESS, DEADLINE_LIST, NO_DEADLINE, ENTER_NEW_DEADLINE,
+    ENTER_NEW_DESCRIPTION, ADD_DEADLINE_SUCCESS, format_project
 )
 from keyboards.projects import (
     make_project_keyboard, make_back_keyboard, make_settings_keyboard, make_files_keyboard,
@@ -31,7 +33,7 @@ from keyboards.projects import (
     make_complete_task_keyboard, make_complete_student_tasks_keyboard,
     make_teacher_tasks_empty_keyboard, make_teacher_tasks_keyboard,
     make_actual_student_tasks_keyboard, make_actual_task_keyboard,
-    make_teacher_deadline_keyboard
+    make_teacher_deadline_keyboard, add_deadline_to_group
 )
 from db.queries_users import get_user_group_ids, get_user_by_id, user_exists, get_user_role
 from db.queries_files import get_file
@@ -40,6 +42,7 @@ from keyboards.menu import get_menu_keyboard
 
 
 groups_state = {}
+groups_data_temp = {}
 
 async def projects(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
@@ -85,7 +88,7 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
         else:
             await update.message.reply_text(PROJECT_NOT_FOUND)
             return
-    if state.startswith("remind_"):
+    elif state.startswith("remind_"):
         text = update.message.text.strip()
         project_id = int(state.split("_")[-1])
         group = get_group_by_id(project_id)
@@ -107,13 +110,50 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
             text=REMIND_SUCCSESS,
             reply_markup=make_back_keyboard("tasks", project_id)
         )
-    if state.startswith("add_task_"):
+    elif state.startswith("add_task_"):
         text = update.message.text.strip()
         project_id = int(state.split("_")[-1])
         add_task_to_group(project_id, text)
         groups_state[chat_id] = "projects"
 
         await update.message.reply_text(ADD_TASK_SUCCESS, reply_markup=make_back_keyboard("tasks", project_id))
+    elif state.startswith("add_deadline_"):
+        text = update.message.text.strip()
+        project_id = int(state.split("_")[-1])
+
+        if not re.fullmatch(r"\d{2}\.\d{2}\.\d{4}", text):
+            await update.message.reply_text(
+                "Похоже, формат даты неверный 😔\n"
+                "Пожалуйста, укажите дату в формате **ДД.ММ.ГГГГ**.\n"
+                "Например: `05.11.2025`",
+                parse_mode="Markdown"
+            )
+            return
+        try:
+            _ = datetime.strptime(text, "%d.%m.%Y").date()
+        except ValueError:
+            await update.message.reply_text(
+                "Такой даты не существует 😅\n"
+                "Попробуйте снова в формате **ДД.ММ.ГГГГ**.\n"
+                "Например: `05.11.2025`",
+                parse_mode="Markdown"
+            )
+            return
+        
+        groups_data_temp[chat_id] = text
+        groups_state[chat_id] = f"add_description_{project_id}"
+
+        await update.message.reply_text(ENTER_NEW_DESCRIPTION)
+
+    elif state.startswith("add_description_"):
+        text = update.message.text.strip()
+        project_id = int(state.split("_")[-1])
+        deadline = groups_data_temp[chat_id]
+        add_deadline_to_group(project_id, text, deadline)
+        groups_state[chat_id] = "projects"
+        groups_data_temp.pop(chat_id, None)
+
+        await update.message.reply_text(ADD_DEADLINE_SUCCESS, reply_markup=make_back_keyboard("deadlines_", project_id))
     elif state.startswith("add_vkr_"):
         project_id = int(state.split("_")[-1])
 
@@ -264,6 +304,12 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
             await update.effective_message.reply_text(message_text, reply_markup=make_back_keyboard("project", project_id))
         else:
             await update.effective_message.reply_text(message_text, reply_markup=make_teacher_deadline_keyboard(project_id))
+    elif data.startswith("add_deadline_"):
+        chat_id = query.message.chat_id
+        project_id, name = await extract_project_info(data, query)
+        groups_state[chat_id] = f"add_deadline_{project_id}"
+
+        await query.message.reply_text(ENTER_NEW_DEADLINE)
     elif data.startswith("tasks_"):
         chat_id = query.message.chat_id
         project_id, name = await extract_project_info(data, query)
