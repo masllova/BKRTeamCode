@@ -602,10 +602,18 @@ def get_text_for_project(project_id: int) -> str | None:
     if isinstance(deadlines, str):
         deadlines = json.loads(deadlines)
     today = datetime.today().date()
-    active_deadlines = [
-        d for d in deadlines.values()
-        if datetime.strptime(d.get("deadline", ""), "%d.%m.%Y").date() >= today
-    ]
+    active_deadlines = []
+
+    for d in deadlines.values():
+        date_str = d.get("deadline", "")
+        if not date_str:
+            continue  # пропускаем, если даты нет
+        try:
+            deadline_date = datetime.strptime(date_str, "%d.%m.%Y").date()
+            if deadline_date >= today:
+                active_deadlines.append(d)
+        except ValueError:
+            continue  # пропускаем, если формат не подходит
     deadline_count = len(active_deadlines)
     tasks = group.get("tasks") or {}
 
