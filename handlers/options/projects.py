@@ -90,14 +90,15 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
         group = get_group_by_id(project_id)
         name = group.get("name", NO_NAME)
         teacher_id = group.get("teacher_id")
+        student_id = group.get("student_id")
+        student = get_user_by_id(student_id)
         teacher = get_user_by_id(teacher_id) if teacher_id else None
         teacher_name = teacher["full_name"] if teacher else NO_TEACHER
 
-        await update.message.reply_text(REMIND.format(
-            teacher_name=teacher_name,
-            project_name=name,
-            comment=text
-        ))
+        await update.message.reply_text(
+            chat_id=student["telegram_id"],
+            text=REMIND.format(teacher_name=teacher_name, project_name=name, comment=text)
+        )
     if state.startswith("add_task_"):
         text = update.message.text.strip()
         project_id = int(state.split("_")[-1])
