@@ -100,7 +100,9 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "/requests - Посмотреть заявки"
             )
             return
-        text = "🗂️ Журнал задач и дедлайнов\n\n"
+        text = "🗂️ Журнал задач и дедлайнов\n\n📁 *Проекты:*"
+
+
 
         for id in group_ids:
             group = get_group_by_id(id)
@@ -111,7 +113,7 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 if isinstance(tasks, str):
                     tasks = json.loads(tasks)
                 if tasks:
-                    text += f"\n📁 Проект: {group["name"]}"
+                    text += f"\nПроект: {group["name"]}"
 
                     for _, task in tasks.items():
                         if task.get("done"):
@@ -138,7 +140,7 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
                 if upcoming:
                     text += "\n\n📅  *Ближайшие дедлайны:*\n"
-                    text += f"\n📁 {group['name']}"
+                    text += f"\nПроект: {group['name']}"
                     for date, deadline_text in sorted(upcoming):
                         text += f"\n{date.strftime('%d.%m.%Y')} — {deadline_text}"
         role = get_user_role(chat_id)
@@ -188,8 +190,8 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     tasks = json.loads(tasks)
                 if tasks:
                     text += "\n\n📌 Задачи:"
-                    text += f"- Всего: {len(tasks)}"
-                    text += f"- Выполнено: {sum(1 for task in tasks.values() if not task.get("done", False))}"
+                    text += f"\n- Всего: {len(tasks)}"
+                    text += f"\n- Выполнено: {sum(1 for task in tasks.values() if not task.get("done", False))}"
 
                 deadlines = group.get("deadlines") or {}
                 if isinstance(deadlines, str):
@@ -211,7 +213,7 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         continue
 
                 if upcoming:
-                    text += "\n📅 Ближайшие дедлайны:"
+                    text += "\n\n📅 Ближайшие дедлайны:"
                     for date, deadline_text in sorted(upcoming):
                         text += f"\n{date.strftime('%d.%m.%Y')} — {deadline_text}"
                 
