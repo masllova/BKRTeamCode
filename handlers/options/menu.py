@@ -221,7 +221,7 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 student = get_user_by_id(student_id) if student_id else None
                 student_name = student["full_name"] if student else NO_STUDENT
 
-                text += f"\n 👤 Студент: {}]"
+                text += f"\n 👤 Студент: {student_name}"
                 # добавить контакты если заполнены
         role = get_user_role(chat_id)
         keyboard = get_menu_keyboard(role) 
