@@ -28,7 +28,7 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
     data = query.data
 
     if data == "settings":
-        await update.message.reply_text("Выберите раздел настроек", reply_markup=SELECT_SETTINGS_KEYBOARD)
+        await query.message.reply_text("Выберите раздел настроек", reply_markup=SELECT_SETTINGS_KEYBOARD)
     if data == "notification":
         return
     if data == "profile":
@@ -89,13 +89,13 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
             keyboard = make_student_settings_keyboard(has_faculty, has_department, has_specialty, has_articles, has_interests, has_email)
         else:
             keyboard = make_teacher_settings_keyboard(has_degree, has_articles, has_interests, has_email)
-        await update.message.reply_text(text, reply_markup = keyboard)
+        await query.message.reply_text(text, reply_markup = keyboard)
     elif data == "student_stage":
         # 
-        await update.message.reply_text(SELECT_STAGE_STUDENT, reply_markup=STUDENT_STAGES)
+        await query.message.reply_text(SELECT_STAGE_STUDENT, reply_markup=STUDENT_STAGES)
     elif data == "teacher_stage":
         # 
-        await update.message.reply_text(SELECT_STAGE_TEACHER, reply_markup=TEACHER_STAGES)
+        await query.message.reply_text(SELECT_STAGE_TEACHER, reply_markup=TEACHER_STAGES)
     elif data == "student_university":
         settings_state[chat_id] = "student_university"
         await query.message.reply_text(SELECT_UNIVERSITY_STUDENT)
