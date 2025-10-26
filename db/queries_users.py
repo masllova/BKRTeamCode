@@ -96,10 +96,12 @@ def update_user_info(telegram_id: int, field_name: str, value: str):
         conn.commit()
 
 def get_user_by_id(user_id: int) -> dict | None:
-    cursor.execute(
-        "SELECT telegram_id, full_name, role, university, stage FROM users WHERE id = %s;",
-        (user_id,)
-    )
+    cursor.execute("""
+        SELECT telegram_id, full_name, role, university, stage, email
+        FROM users
+        WHERE id = %s;
+    """, (user_id,))
+    
     result = cursor.fetchone()
     if result:
         return {
@@ -108,6 +110,7 @@ def get_user_by_id(user_id: int) -> dict | None:
             "role": result[2],
             "university": result[3],
             "stage": result[4],
+            "email": result[5],
         }
     return None
 
