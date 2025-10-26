@@ -3,11 +3,35 @@ from db.connection import conn, cursor
 def add_user(telegram_id: int, full_name: str, role: str, university: str, stage: str):
     cursor.execute(
         """
-        INSERT INTO users (telegram_id, full_name, role, university, stage)
-        VALUES (%s, %s, %s, %s, %s)
+        INSERT INTO users (telegram_id, full_name, role, university, stage, notifications_enabled)
+        VALUES (%s, %s, %s, %s, %s, TRUE)
         ON CONFLICT (telegram_id) DO NOTHING;
         """,
         (telegram_id, full_name, role, university, stage)
+    )
+    conn.commit()
+
+def get_notifications_state(telegram_id: int) -> bool:
+    """Возвращает текущее состояние уведомлений пользователя."""
+    cursor.execute(
+        "SELECT notifications_enabled FROM users WHERE telegram_id = %s;",
+        (telegram_id,)
+    )
+    result = cursor.fetchone()
+    if result is not None:
+        return result[0]
+    return False  # если юзера нет в БД — считаем, что выключено
+
+
+def set_notifications_state(telegram_id: int, enabled: bool):
+    """Изменяет состояние уведомлений по telegram_id."""
+    cursor.execute(
+        """
+        UPDATE users
+        SET notifications_enabled = %s
+        WHERE telegram_id = %s;
+        """,
+        (enabled, telegram_id)
     )
     conn.commit()
 
