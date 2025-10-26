@@ -7,21 +7,14 @@ from db.queries_requests import (
     get_request_users,
     get_request_topic
 )
-from db.queries_users import get_user_by_id, user_exists, add_group_to_user
+from db.queries_users import get_user_by_id, user_exists, add_group_to_user, is_profile_complete_by_id
 from db.queries_groups import create_group
 from texts.menu import NOT_REGISTERED
 from texts.requests import (
-    NO_INCOMING_REQUESTS,
-    NO_OUTGOING_REQUESTS, 
-    REQUEST_ACCEPTED_TEXT_RECEIVER, 
-    REQUEST_ACCEPTED_TEXT_SENDER, 
-    REQUEST_DECLINED_TEXT_RECEIVER, 
-    REQUEST_DECLINED_TEXT_SENDER, 
-    REQUEST_DELETED_TEXT, 
-    REQUEST_REMINDER_SENT_TEXT, 
-    REQUEST_REMINDER_RECEIVED_TEXT, 
-    INCOMING_REQUEST_TEMPLATE, 
-    OUTGOING_REQUEST_TEMPLATE
+    NO_INCOMING_REQUESTS, NO_OUTGOING_REQUESTS, REQUEST_ACCEPTED_TEXT_RECEIVER, 
+    REQUEST_ACCEPTED_TEXT_SENDER, REQUEST_DECLINED_TEXT_RECEIVER, REQUEST_DECLINED_TEXT_SENDER, 
+    REQUEST_DELETED_TEXT, REQUEST_REMINDER_SENT_TEXT, REQUEST_REMINDER_RECEIVED_TEXT, 
+    INCOMING_REQUEST_TEMPLATE, OUTGOING_REQUEST_TEMPLATE, NO_INCOMING_REQUESTS_WITH_RECOMENDATION
 )
 from keyboards.requests import build_incoming_keyboard, build_outgoing_keyboard
 
@@ -36,8 +29,12 @@ async def view_requests(update: Update, context: ContextTypes.DEFAULT_TYPE):
         requests = get_incoming_requests(chat_id)
 
         if not requests:
-            await update.message.reply_text(NO_INCOMING_REQUESTS)
-            # тут расширение ввода профиля
+            is_complete = is_profile_complete_by_id(chat_id)
+
+            if is_complete:
+                await update.message.reply_text(NO_INCOMING_REQUESTS)
+            else:
+                await update.message.reply_text(NO_INCOMING_REQUESTS_WITH_RECOMENDATION)
             return
         for r in requests:
             await update.message.reply_text(
@@ -58,8 +55,12 @@ async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT
         requests = get_incoming_requests(chat_id)
 
         if not requests:
-            await query.message.reply_text(NO_INCOMING_REQUESTS)
-            # тут расширение ввода профиля
+            is_complete = is_profile_complete_by_id(chat_id)
+
+            if is_complete:
+                await update.message.reply_text(NO_INCOMING_REQUESTS)
+            else:
+                await update.message.reply_text(NO_INCOMING_REQUESTS_WITH_RECOMENDATION)
             return
         for r in requests:
             await query.message.reply_text(
@@ -73,7 +74,6 @@ async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT
 
         if not requests:
             await query.message.reply_text(NO_OUTGOING_REQUESTS)
-            # тут расширение ввода профиля
             return
         for r in requests:
             await query.message.reply_text(
