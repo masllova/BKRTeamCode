@@ -6,15 +6,9 @@ import re
 import json
 from datetime import datetime
 from db.queries_groups import (
-    get_group_by_id, 
-    delete_group, 
-    update_group_name, 
-    add_vkr_to_group,
-    add_article_to_group,
-    add_file_to_group,
-    add_task_to_group,
-    set_task_status,
-    add_deadline_to_group
+    get_group_by_id, delete_group, update_group_name, add_vkr_to_group,
+    add_article_to_group, add_file_to_group,add_task_to_group, 
+    set_task_status, add_deadline_to_group
 )
 from texts.projects import (
     NO_PROJECTS, SELECT_PROJECT, RENAME_SUCCESS, PROJECT_NOT_FOUND, UPDATE_VKR_FILE_SUCCESS,
@@ -28,7 +22,7 @@ from texts.projects import (
     ACTUAL_TASK, ENTER_COMMENT, REMIND, REMIND_SUCCSESS, DEADLINE_LIST, NO_DEADLINE, ENTER_NEW_DEADLINE,
     ENTER_NEW_DESCRIPTION, ADD_DEADLINE_SUCCESS, ADD_TASK_REMIND, ADD_DEADLINE_REMIND, 
     UPDATE_VKR_FILE_SUCCESS_REMIND, UPDATE_FILE_SUCCESS_REMIND, UPDATE_ARTICLE_FILE_SUCCESS_REMIND,
-      format_project
+    format_project
 )
 from keyboards.projects import (
     make_project_keyboard, make_back_keyboard, make_settings_keyboard, make_files_keyboard,
@@ -38,7 +32,10 @@ from keyboards.projects import (
     make_actual_student_tasks_keyboard, make_actual_task_keyboard,
     make_teacher_deadline_keyboard
 )
-from db.queries_users import get_user_group_ids, get_user_by_id, user_exists, get_user_role
+from db.queries_users import (
+    get_user_group_ids, get_user_by_id,
+    user_exists, get_user_role, get_notifications_state
+)
 from db.queries_files import get_file
 from texts.menu import NOT_REGISTERED
 from keyboards.menu import get_menu_keyboard
@@ -102,11 +99,13 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
         teacher_name = teacher["full_name"] if teacher else NO_TEACHER
 
         groups_state[chat_id] = "projects"
+        enabled = get_notifications_state(chat_id)
 
-        await context.bot.send_message(
-            chat_id=student["telegram_id"],
-            text=REMIND.format(teacher_name=teacher_name, project_name=name, comment=text)
-        )
+        if enabled:
+            await context.bot.send_message(
+                chat_id=student["telegram_id"],
+                text=REMIND.format(teacher_name=teacher_name, project_name=name, comment=text)
+            )
         await context.bot.send_message(
             chat_id=teacher["telegram_id"],
             text=REMIND_SUCCSESS,
@@ -127,10 +126,13 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
         teacher_name = teacher["full_name"] if teacher else NO_TEACHER
 
         await update.message.reply_text(ADD_TASK_SUCCESS, reply_markup=make_back_keyboard("tasks", project_id))
-        await context.bot.send_message(
-            chat_id=student["telegram_id"],
-            text=ADD_TASK_REMIND.format(teacher_name=teacher_name, project_name=name)
-        )
+        enabled = get_notifications_state(chat_id)
+
+        if enabled:
+            await context.bot.send_message(
+                chat_id=student["telegram_id"],
+                text=ADD_TASK_REMIND.format(teacher_name=teacher_name, project_name=name)
+            )
     elif state.startswith("add_deadline_"):
         text = update.message.text.strip()
         project_id = int(state.split("_")[-1])
@@ -174,10 +176,13 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
         teacher_name = teacher["full_name"] if teacher else NO_TEACHER
 
         await update.message.reply_text(ADD_DEADLINE_SUCCESS, reply_markup=make_back_keyboard("deadlines_", project_id))
-        await context.bot.send_message(
-            chat_id=student["telegram_id"],
-            text=ADD_DEADLINE_REMIND.format(teacher_name=teacher_name, project_name=name)
-        )
+        enabled = get_notifications_state(chat_id)
+
+        if enabled:
+            await context.bot.send_message(
+                chat_id=student["telegram_id"],
+                text=ADD_DEADLINE_REMIND.format(teacher_name=teacher_name, project_name=name)
+            )
     elif state.startswith("add_vkr_"):
         project_id = int(state.split("_")[-1])
 
@@ -211,10 +216,13 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
                 remind_id = student["telegram_id"]
 
             await update.message.reply_text(UPDATE_VKR_FILE_SUCCESS, reply_markup=make_back_keyboard("vkr", project_id))
-            await context.bot.send_message(
-                chat_id=remind_id,
-                text=UPDATE_VKR_FILE_SUCCESS_REMIND.format(project_name=name)
-            )
+            enabled = get_notifications_state(chat_id)
+
+            if enabled:
+                await context.bot.send_message(
+                    chat_id=remind_id,
+                    text=UPDATE_VKR_FILE_SUCCESS_REMIND.format(project_name=name)
+                )
         elif update.message.text:
             text = update.message.text.strip()
 
@@ -235,10 +243,13 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
                     remind_id = student["telegram_id"]
 
                 await update.message.reply_text(UPDATE_VKR_LINK_SUCCESS, reply_markup=make_back_keyboard("vkr", project_id))
-                await context.bot.send_message(
-                    chat_id=remind_id,
-                    text=UPDATE_VKR_FILE_SUCCESS_REMIND.format(project_name=name)
-                )
+                enabled = get_notifications_state(chat_id)
+
+                if enabled:
+                    await context.bot.send_message(
+                        chat_id=remind_id,
+                        text=UPDATE_VKR_FILE_SUCCESS_REMIND.format(project_name=name)
+                    )
             else:
                 await update.message.reply_text(RESEND_LINK)
         else:
@@ -276,10 +287,13 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
                 remind_id = student["telegram_id"]
 
             await update.message.reply_text(ADD_ARTICLE_FILE, reply_markup=make_back_keyboard("articles", project_id))
-            await context.bot.send_message(
-                chat_id=remind_id,
-                text=UPDATE_ARTICLE_FILE_SUCCESS_REMIND.format(project_name=name)
-            )
+            enabled = get_notifications_state(chat_id)
+
+            if enabled:
+                await context.bot.send_message(
+                    chat_id=remind_id,
+                    text=UPDATE_ARTICLE_FILE_SUCCESS_REMIND.format(project_name=name)
+                )
         elif update.message.text:
             text = update.message.text.strip()
 
@@ -300,10 +314,13 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
                     remind_id = student["telegram_id"]
 
                 await update.message.reply_text(ADD_ARTICLE_LINK, reply_markup=make_back_keyboard("articles", project_id))
-                await context.bot.send_message(
-                    chat_id=remind_id,
-                    text=UPDATE_ARTICLE_FILE_SUCCESS_REMIND.format(project_name=name)
-                )
+                enabled = get_notifications_state(chat_id)
+
+                if enabled:
+                    await context.bot.send_message(
+                        chat_id=remind_id,
+                        text=UPDATE_ARTICLE_FILE_SUCCESS_REMIND.format(project_name=name)
+                    )
             else:
                 await update.message.reply_text(RESEND_LINK)
         else:
@@ -341,10 +358,13 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
                 remind_id = student["telegram_id"]
 
             await update.message.reply_text(ADD_FILE, reply_markup=make_back_keyboard("another_files_", project_id))
-            await context.bot.send_message(
-                chat_id=remind_id,
-                text=UPDATE_FILE_SUCCESS_REMIND.format(project_name=name)
-            )
+            enabled = get_notifications_state(chat_id)
+
+            if enabled:
+                await context.bot.send_message(
+                    chat_id=remind_id,
+                    text=UPDATE_FILE_SUCCESS_REMIND.format(project_name=name)
+                )
         elif update.message.text:
             text = update.message.text.strip()
 
@@ -365,10 +385,13 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
                     remind_id = student["telegram_id"]
 
                 await update.message.reply_text(ADD_LINK, reply_markup=make_back_keyboard("another_files_", project_id))
-                await context.bot.send_message(
-                    chat_id=remind_id,
-                    text=UPDATE_FILE_SUCCESS_REMIND.format(project_name=name)
-                )
+                enabled = get_notifications_state(chat_id)
+
+                if enabled:
+                    await context.bot.send_message(
+                        chat_id=remind_id,
+                        text=UPDATE_FILE_SUCCESS_REMIND.format(project_name=name)
+                    )
             else:
                 await update.message.reply_text(RESEND_LINK)
         else:

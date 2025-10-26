@@ -1,13 +1,13 @@
 from telegram import Update, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from db.queries_requests import (
-    get_incoming_requests, 
-    get_outgoing_requests, 
-    respond_request, 
-    get_request_users,
-    get_request_topic
+    get_incoming_requests, get_outgoing_requests, respond_request, 
+    get_request_users, get_request_topic
 )
-from db.queries_users import get_user_by_id, user_exists, add_group_to_user, is_profile_complete_by_id
+from db.queries_users import (
+    get_user_by_id, user_exists, add_group_to_user, 
+    is_profile_complete_by_id, get_notifications_state
+)
 from db.queries_groups import create_group
 from texts.menu import NOT_REGISTERED
 from texts.requests import (
@@ -104,10 +104,13 @@ async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT
             chat_id=receiver_info["telegram_id"],
             text=REQUEST_ACCEPTED_TEXT_RECEIVER
         )
-        await context.bot.send_message(
-            chat_id=sender_info["telegram_id"],
-            text=REQUEST_ACCEPTED_TEXT_SENDER.format(sender_name=sender_info['full_name'])
-        )
+        enabled = get_notifications_state(sender_info["telegram_id"])
+        
+        if enabled:
+            await context.bot.send_message(
+                chat_id=sender_info["telegram_id"],
+                text=REQUEST_ACCEPTED_TEXT_SENDER.format(sender_name=sender_info['full_name'])
+            )
     elif data.startswith("decline_request_"):
         request_id = int(data.split("_")[-1])
         sender_id, receiver_id = get_request_users(request_id)
@@ -120,10 +123,13 @@ async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT
             chat_id=receiver_info["telegram_id"],
             text=REQUEST_DECLINED_TEXT_RECEIVER
         )
-        await context.bot.send_message(
-            chat_id=sender_info["telegram_id"],
-            text=REQUEST_DECLINED_TEXT_SENDER.format(receiver_name=sender_info['full_name'])
-        )
+        enabled = get_notifications_state(sender_info["telegram_id"])
+
+        if enabled:
+            await context.bot.send_message(
+                chat_id=sender_info["telegram_id"],
+                text=REQUEST_DECLINED_TEXT_SENDER.format(receiver_name=sender_info['full_name'])
+            )
     elif data.startswith("delete_request_"):
         request_id = int(data.split("_")[-1])
         respond_request(request_id)
@@ -139,7 +145,10 @@ async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT
             chat_id=sender_info["telegram_id"],
             text=REQUEST_REMINDER_SENT_TEXT
         )
-        await context.bot.send_message(
-            chat_id=receiver_info["telegram_id"],
-            text=REQUEST_REMINDER_RECEIVED_TEXT.format(sender_name=sender_info['full_name'])
-        )
+        enabled = get_notifications_state(sender_info["telegram_id"])
+
+        if enabled:
+            await context.bot.send_message(
+                chat_id=receiver_info["telegram_id"],
+                text=REQUEST_REMINDER_RECEIVED_TEXT.format(sender_name=sender_info['full_name'])
+            )
