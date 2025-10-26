@@ -226,9 +226,12 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 student_id = group.get("student_id")
                 student = get_user_by_id(student_id) if student_id else None
                 student_name = student["full_name"] if student else NO_STUDENT
+                student_email = student["email"]
 
                 text += f"\n\n👤 Студент: {student_name}"
-                # добавить контакты если заполнены
+
+                if student_email:
+                    text += f"\nПочта: {student_email}"
         role = get_user_role(chat_id)
         keyboard = get_menu_keyboard(role) 
         await update.message.reply_text(text, reply_markup=keyboard, parse_mode="Markdown")
