@@ -122,6 +122,7 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
         name = group.get("name", NO_NAME)
         student_id = group.get("student_id")
         student = get_user_by_id(student_id)
+        teacher_name = teacher["full_name"] if teacher else NO_TEACHER
 
         await update.message.reply_text(ADD_TASK_SUCCESS, reply_markup=make_back_keyboard("tasks", project_id))
         await context.bot.send_message(
@@ -162,6 +163,11 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
         add_deadline_to_group(project_id, text, deadline)
         groups_state[chat_id] = "projects"
         groups_data_temp.pop(chat_id, None)
+        group = get_group_by_id(project_id)
+        name = group.get("name", NO_NAME)
+        student_id = group.get("student_id")
+        student = get_user_by_id(student_id)
+        teacher_name = teacher["full_name"] if teacher else NO_TEACHER
 
         await update.message.reply_text(ADD_DEADLINE_SUCCESS, reply_markup=make_back_keyboard("deadlines_", project_id))
         await context.bot.send_message(
