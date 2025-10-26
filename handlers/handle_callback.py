@@ -15,11 +15,12 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = get_user_by_chat_id(chat_id)
 
     if not user:
-        await query.message.reply_text(NOT_REGISTERED)
-        return
-    elif chat_id in user_state:
-        await handle_registration_callback(update, context)
-        return
+        if chat_id in user_state:
+            await handle_registration_callback(update, context)
+            return
+        else:
+            await query.message.reply_text(NOT_REGISTERED)
+            return
     elif search_state.get(chat_id):
         await handle_search_callback(update, context)
         return
