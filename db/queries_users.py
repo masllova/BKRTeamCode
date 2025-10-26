@@ -146,7 +146,7 @@ def search_users(query: str, target_role: str, last_id: int | None = None) -> li
     """
 
     search_pattern = f"%{query}%"
-    params.extend([search_pattern] * 11)
+    params.extend([search_pattern] * 10)
     cursor.execute(base_sql, tuple(params))
     results = cursor.fetchall()
 
