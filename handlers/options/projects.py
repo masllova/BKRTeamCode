@@ -128,6 +128,8 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
         await update.message.reply_text(ADD_TASK_SUCCESS, reply_markup=make_back_keyboard("tasks", project_id))
         enabled = get_notifications_state(chat_id)
 
+        print("enabled", enabled)
+
         if enabled:
             await context.bot.send_message(
                 chat_id=student["telegram_id"],
