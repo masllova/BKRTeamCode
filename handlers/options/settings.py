@@ -6,8 +6,9 @@ from texts.settings import (
     SELECT_UNIVERSITY_STUDENT, SELECT_UNIVERSITY_TEACHER, FACULTY_TEXT,
     SPECIALTY_TEXT, DEPARTMENT_TEXT, ARTICLES_TEXT, RESEARCH_INTERESTS_TEXT,
     DEGREE_TEXT, SELECT_STAGE_STUDENT, SELECT_STAGE_TEACHER, EMAIL_TEXT, 
-    SUCCESS_TEXT, OLD_VALUE
+    SUCCESS_TEXT
 )
+from keyboards.settings import make_student_settings_keyboard, make_teacher_settings_keyboard, SELECT_SETTINGS_KEYBOARD
 from keyboards.stage import STUDENT_STAGES, TEACHER_STAGES
 
 settings_state = {}
@@ -26,89 +27,93 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
     chat_id = query.message.chat_id
     data = query.data
 
-    if data == "student_stage":
+    if data == "settings":
+        await update.message.reply_text("Выберите раздел настроек", reply_markup=SELECT_SETTINGS_KEYBOARD)
+    if data == "notification":
+        return
+    if data == "profile":
+        user_data = get_user_by_chat_id(chat_id)
+        text = "Здесь Вы можете редактировать свой профиль\n\nАктуальная информация:"
+
+        has_faculty, has_department, has_specialty, has_degree, has_articles, has_interests, has_email = False
+
+        if user_data["role"] == "student":
+            text += f"\nСтупень образования: {user_data["stage"]}"
+            text += f"\nУчебное заведение: {user_data["university"]}"
+            faculty = user_data["faculty"]
+
+            if faculty:
+                has_faculty = True
+                text += f"\nФакультет: {faculty}"
+            department = user_data["department"]
+
+            if department:
+                has_department = True
+                text += f"\nКафедра/Направление: {department}"
+            specialty = user_data["specialty"]
+            
+            if specialty:
+                has_specialty = True
+                text += f"\nСпециальность: {user_data["specialty"]}"
+        else:
+            text += f"\nДолжность: {user_data["stage"]}"
+            text += f"\nНаучное учреждение: {user_data["university"]}"
+            degree = user_data["degree"]
+
+            if degree:
+                has_degree = True
+                text += f"\nСтепень: {degree}"
+        articles = user_data["articles"]
+
+        if articles:
+            has_articles = True
+            text += f"\nСтатьи: {articles}"
+        research_interests = user_data["research_interests"]
+        
+        if research_interests:
+            has_interests = True
+            text += f"\Научные интересы: {research_interests}"
+        email = user_data["email"]
+        
+        if email:
+            has_email = True
+            text += f"\Почта: {email}"
+
+        if user_data["role"] == "student":
+            keyboard = make_student_settings_keyboard(has_faculty, has_department, has_specialty, has_articles, has_interests, has_email)
+        else:
+            keyboard = make_teacher_settings_keyboard(has_degree, has_articles, has_interests, has_email)
+        await update.message.reply_text(text, reply_markup = keyboard)
+    elif data == "student_stage":
+        # 
         await update.message.reply_text(SELECT_STAGE_STUDENT, reply_markup=STUDENT_STAGES)
     elif data == "teacher_stage":
+        # 
         await update.message.reply_text(SELECT_STAGE_TEACHER, reply_markup=TEACHER_STAGES)
     elif data == "student_university":
         settings_state[chat_id] = "student_university"
-        text = ""
-        old_value = get_user_by_chat_id(chat_id)["university"]
-
-        if old_value:
-            text += OLD_VALUE.format(value=old_value)
-        text += SELECT_UNIVERSITY_STUDENT
-        query.message.reply_text(text)
+        await query.message.reply_text(SELECT_UNIVERSITY_STUDENT)
     elif data == "teacher_university":
         settings_state[chat_id] = "teacher_university"
-        text = ""
-        old_value = get_user_by_chat_id(chat_id)["university"]
-
-        if old_value:
-            text += OLD_VALUE.format(value=old_value)
-        text += SELECT_UNIVERSITY_TEACHER
-        query.message.reply_text(text)
+        await query.message.reply_text(SELECT_UNIVERSITY_TEACHER)
     elif data == "student_faculty":
         settings_state[chat_id] = "student_faculty"
-        text = ""
-        old_value = get_user_by_chat_id(chat_id)["faculty"]
-
-        if old_value:
-            text += OLD_VALUE.format(value=old_value)
-        text += FACULTY_TEXT
-        query.message.reply_text(text)
+        await query.message.reply_text(FACULTY_TEXT)
     elif data == "student_department":
         settings_state[chat_id] = "student_department"
-        text = ""
-        old_value = get_user_by_chat_id(chat_id)["department"]
-
-        if old_value:
-            text += OLD_VALUE.format(value=old_value)
-        text += DEPARTMENT_TEXT
-        query.message.reply_text(text)
+        await query.message.reply_text(DEPARTMENT_TEXT)
     elif data == "student_specialty":
         settings_state[chat_id] = "student_specialty"
-        text = ""
-        old_value = get_user_by_chat_id(chat_id)["specialty"]
-
-        if old_value:
-            text += OLD_VALUE.format(value=old_value)
-        text += SPECIALTY_TEXT
-        query.message.reply_text(text)
+        await query.message.reply_text(SPECIALTY_TEXT)
     elif data == "teacher_degree":
         settings_state[chat_id] = "teacher_degree"
-        text = ""
-        old_value = get_user_by_chat_id(chat_id)["degree"]
-
-        if old_value:
-            text += OLD_VALUE.format(value=old_value)
-        text += DEGREE_TEXT
-        query.message.reply_text(text)
+        await query.message.reply_text(DEGREE_TEXT)
     elif data == "articles":
         settings_state[chat_id] = "articles"
-        text = ""
-        old_value = get_user_by_chat_id(chat_id)["articles"]
-
-        if old_value:
-            text += OLD_VALUE.format(value=old_value)
-        text += ARTICLES_TEXT
-        query.message.reply_text(text)
+        await query.message.reply_text(ARTICLES_TEXT)
     elif data == "research_interests":
         settings_state[chat_id] = "research_interests"
-        text = ""
-        old_value = get_user_by_chat_id(chat_id)["research_interests"]
-
-        if old_value:
-            text += OLD_VALUE.format(value=old_value)
-        text += RESEARCH_INTERESTS_TEXT
-        query.message.reply_text(text)
+        await query.message.reply_text(RESEARCH_INTERESTS_TEXT)
     elif data == "email":
         settings_state[chat_id] = "email"
-        text = ""
-        old_value = get_user_by_chat_id(chat_id)["email"]
-
-        if old_value:
-            text += OLD_VALUE.format(value=old_value)
-        text += EMAIL_TEXT
-        query.message.reply_text(text)
-
+        await query.message.reply_text(EMAIL_TEXT)

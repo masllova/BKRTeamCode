@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from keyboards.menu import BUTTON_TO_COMMAND, get_menu_keyboard
-from keyboards.settings import make_settings_keyboard
+from keyboards.settings import SELECT_SETTINGS_KEYBOARD
 from db.queries_users import user_exists, get_user_role, get_user_group_ids, get_user_by_id
 from db.queries_groups import get_group_by_id
 from texts.menu import MENU_AVAILABLE, NOT_REGISTERED, NO_STUDENT
@@ -95,10 +95,8 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(text, reply_markup=keyboard)
         return
     elif command == "settings":
-        role = get_user_role(chat_id)
-        keyboard = make_settings_keyboard(role)
-        settings_state[chat_id] = "projects"
-        await update.message.reply_text("Здесь Вы можете редактировать свой профиль", reply_markup=keyboard)
+        settings_state[chat_id] = "settings"
+        await update.message.reply_text("Выберите раздел настроек", reply_markup=SELECT_SETTINGS_KEYBOARD)
     elif command == "journal":
         group_ids = get_user_group_ids(chat_id)
 
