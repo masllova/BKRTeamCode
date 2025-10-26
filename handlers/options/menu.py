@@ -96,7 +96,7 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     elif command == "settings":
         role = get_user_role(chat_id)
-        make_settings_keyboard(role)
+        keyboard = make_settings_keyboard(role)
         settings_state[chat_id] = "projects"
         await update.message.reply_text("Здесь Вы можете редактировать свой профиль", reply_markup=keyboard)
     elif command == "journal":
