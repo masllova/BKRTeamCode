@@ -67,4 +67,4 @@ def make_teacher_settings_keyboard(has_degree, has_articles, has_interests, has_
     return InlineKeyboardMarkup(edit_buttons + add_buttons + make_back_button("settings"))
 
 def make_back_button(command):
-    return [InlineKeyboardButton("Назад", callback_data=f"{command}")]
+    return [[InlineKeyboardButton("Назад", callback_data=f"{command}")]]
