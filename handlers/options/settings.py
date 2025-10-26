@@ -150,16 +150,16 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
         settings_state[chat_id] = "university"
         await query.message.reply_text(SELECT_UNIVERSITY_TEACHER)
     elif data == "student_faculty":
-        settings_state[chat_id] = "student_faculty"
+        settings_state[chat_id] = "faculty"
         await query.message.reply_text(FACULTY_TEXT)
     elif data == "student_department":
-        settings_state[chat_id] = "student_department"
+        settings_state[chat_id] = "department"
         await query.message.reply_text(DEPARTMENT_TEXT)
     elif data == "student_specialty":
-        settings_state[chat_id] = "student_specialty"
+        settings_state[chat_id] = "specialty"
         await query.message.reply_text(SPECIALTY_TEXT)
     elif data == "teacher_degree":
-        settings_state[chat_id] = "teacher_degree"
+        settings_state[chat_id] = "degree"
         await query.message.reply_text(DEGREE_TEXT)
     elif data == "articles":
         settings_state[chat_id] = "articles"
