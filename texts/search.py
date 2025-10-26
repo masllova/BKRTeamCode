@@ -19,8 +19,11 @@ def format_user_profile(
     university: str | None = None,
     faculty: str | None = None,
     department: str | None = None,
+    specialty: str | None = None,
+    degree: str | None = None,
     articles: str | None = None,
     research_interests: str | None = None,
+    email: str | None = None
 ) -> str:
     parts = ""
 
@@ -40,8 +43,14 @@ def format_user_profile(
         parts += f"Факультет: {faculty.strip()}\n"
     if department and department.strip():
         parts += f"Кафедра: {department.strip()}\n"
+    if specialty and specialty.strip():
+        parts += f"Специальность: {specialty.strip()}\n"
+    if degree and degree.strip():
+        parts += f"Степень: {degree.strip()}\n"
     if articles and articles.strip():
         parts += f"Статьи: {articles.strip()}\n"
     if research_interests and research_interests.strip():
-        parts += f"Интересы: {research_interests.strip()}\n"
+        parts += f"Научные интересы: {research_interests.strip()}\n"
+    if email and email.strip():
+        parts += f"Почта: {email.strip()}\n"
     return parts

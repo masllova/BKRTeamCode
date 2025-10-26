@@ -105,8 +105,11 @@ async def handle_search_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
             university=u['university'],
             faculty=u['faculty'],
             department=u['department'],
-            articles=u['department'],
-            research_interests=u['research_interests']
+            specialty=u['specialty'],
+            degree=u['degree'],
+            articles=u['articles'],
+            research_interests=u['research_interests'],
+            email=u['email']
         )
         target_id = u['telegram_id']
         if not request_exists(chat_id, target_id):

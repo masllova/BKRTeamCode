@@ -1,6 +1,5 @@
 from telegram import Update
 from telegram.ext import ContextTypes
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from db.queries_users import get_user_by_chat_id, update_user_info
 from texts.settings import (
     SELECT_UNIVERSITY_STUDENT, SELECT_UNIVERSITY_TEACHER, FACULTY_TEXT,
@@ -82,7 +81,6 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
             if stage and stage.strip():
                 stage_key = stage.strip()
                 stage_name = STUDENT_STAGE_NAMES.get(stage_key, stage_key)
-
                 text += f"\nСтупень образования: {stage_name}"
             text += f"\nУчебное заведение: {user_data["university"]}"
             faculty = user_data["faculty"]
