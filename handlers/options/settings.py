@@ -122,12 +122,12 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
         
         if research_interests:
             has_interests = True
-            text += f"\Научные интересы: {research_interests}"
+            text += f"\nНаучные интересы: {research_interests}"
         email = user_data["email"]
         
         if email:
             has_email = True
-            text += f"\Почта: {email}"
+            text += f"\nПочта: {email}"
 
         if user_data["role"] == "student":
             keyboard = make_student_settings_keyboard(has_faculty, has_department, has_specialty, has_articles, has_interests, has_email)
