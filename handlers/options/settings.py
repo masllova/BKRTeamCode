@@ -20,7 +20,7 @@ async def handle_settings_text(update: Update, context: ContextTypes.DEFAULT_TYP
     # TO DO
     return
 
-async def handle_registration_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     chat_id = query.message.chat_id

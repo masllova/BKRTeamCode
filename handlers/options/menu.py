@@ -97,6 +97,7 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif command == "settings":
         role = get_user_role(chat_id)
         make_settings_keyboard(role)
+        settings_state[chat_id] = "projects"
         await update.message.reply_text("Здесь Вы можете редактировать свой профиль", reply_markup=keyboard)
     elif command == "journal":
         group_ids = get_user_group_ids(chat_id)
@@ -109,8 +110,6 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
         text = "🗂️ Журнал задач и дедлайнов\n\n📁 *Проекты:*"
-
-
 
         for id in group_ids:
             group = get_group_by_id(id)

@@ -5,6 +5,7 @@ from handlers.options.registration import handle_registration_callback, user_sta
 from handlers.options.search import handle_search_callback, search_state
 from handlers.options.requests import handle_requests_callback, requests_state
 from handlers.options.projects import handle_projects_callback, groups_state
+from handlers.options.settings import handle_settings_callback, settings_state
 from texts.options import NOT_REGISTERED
 
 async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -27,4 +28,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     elif groups_state.get(chat_id):
         await handle_projects_callback(update, context)
+        return
+    elif settings_state.get(chat_id):
+        await handle_settings_callback(update, context)
         return
