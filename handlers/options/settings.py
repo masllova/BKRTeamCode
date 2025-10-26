@@ -13,6 +13,7 @@ from keyboards.settings import (
     make_back_button, SELECT_SETTINGS_KEYBOARD
 )
 from keyboards.stage import STUDENT_STAGES, TEACHER_STAGES
+from texts.stage import TEACHER_STAGE_NAMES, STUDENT_STAGE_NAMES
 
 settings_state = {}
 
@@ -77,7 +78,12 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
         has_email = False
 
         if user_data["role"] == "student":
-            text += f"\nСтупень образования: {user_data["stage"]}"
+            stage = user_data["stage"]
+            if stage and stage.strip():
+                stage_key = stage.strip()
+                stage_name = STUDENT_STAGE_NAMES.get(stage_key, stage_key)
+
+                text += f"\nСтупень образования: {stage_name}"
             text += f"\nУчебное заведение: {user_data["university"]}"
             faculty = user_data["faculty"]
 
@@ -95,7 +101,12 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
                 has_specialty = True
                 text += f"\nСпециальность: {user_data["specialty"]}"
         else:
-            text += f"\nДолжность: {user_data["stage"]}"
+            stage = user_data["stage"]
+            if stage and stage.strip():
+                stage_key = stage.strip()
+                stage_name = TEACHER_STAGE_NAMES.get(stage_key, stage_key)
+
+                text += f"\nДолжность: {stage_name}"
             text += f"\nНаучное учреждение: {user_data["university"]}"
             degree = user_data["degree"]
 
