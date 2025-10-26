@@ -144,7 +144,7 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         continue
 
                 if upcoming:
-                    text += "\n\n📅  *Ближайшие дедлайны:*\n"
+                    text += "\n\n📅  *Ближайшие дедлайны (на 28 дней):*\n"
                     text += f"\nПроект: {group['name']}"
                     for date, deadline_text in sorted(upcoming):
                         text += f"\n{date.strftime('%d.%m.%Y')} — {deadline_text}"
@@ -217,7 +217,7 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         continue
 
                 if upcoming:
-                    text += "\n\n📅 Ближайшие дедлайны:"
+                    text += "\n\n📅 Ближайшие дедлайны: (на 28 дней)"
                     for date, deadline_text in sorted(upcoming):
                         text += f"\n{date.strftime('%d.%m.%Y')} — {deadline_text}"
                 

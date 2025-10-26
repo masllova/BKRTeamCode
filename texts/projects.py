@@ -75,5 +75,5 @@ def format_project(
         f"Создан: "
         f"{created_at.strftime('%d.%m.%Y') if isinstance(created_at, datetime) else created_at}\n\n"
         f"📋 Актуальных задач: {task_count}\n"
-        f"⏰ Актуальных дедлайнов: {deadline_count}"
+        f"⏰ Актуальных дедлайнов: {deadline_count} (на ближайшие 28 дней)"
     )
