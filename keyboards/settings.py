@@ -72,6 +72,18 @@ def make_teacher_settings_keyboard(has_degree, has_articles, has_interests, has_
         return InlineKeyboardMarkup(edit_buttons + add_buttons + make_back_button("settings"))
     else:
         return InlineKeyboardMarkup(edit_buttons + add_buttons)
+    
+def make_notification_keyboard(enabled):
+    if enabled:
+        return InlineKeyboardMarkup([
+            [InlineKeyboardButton("Выключить", callback_data="disable")],
+            [InlineKeyboardButton("Назад", callback_data="settings")]
+        ])
+    else:
+        return InlineKeyboardMarkup([
+            [InlineKeyboardButton("Включить", callback_data="enable")],
+            [InlineKeyboardButton("Назад", callback_data="settings")]
+        ])
 
 def make_back_button(command):
     return [[InlineKeyboardButton("Назад", callback_data=f"{command}")]]

@@ -1,17 +1,20 @@
 from telegram import Update
 from telegram.ext import ContextTypes
-from db.queries_users import get_user_by_chat_id, update_user_info, user_exists
+from db.queries_users import (
+    get_user_by_chat_id, update_user_info, user_exists, 
+    get_notifications_state, set_notifications_state
+)
 from texts.settings import (
     SELECT_UNIVERSITY_STUDENT, SELECT_UNIVERSITY_TEACHER, FACULTY_TEXT,
     SPECIALTY_TEXT, DEPARTMENT_TEXT, ARTICLES_TEXT, RESEARCH_INTERESTS_TEXT,
     DEGREE_TEXT, SELECT_STAGE_STUDENT, SELECT_STAGE_TEACHER, EMAIL_TEXT, 
-    SUCCESS_TEXT
+    SUCCESS_TEXT, SUCCESS_NOTIFICATIONS_TEXT, make_notification_state_text
 )
 from texts.stage import TEACHER_STAGE_NAMES, STUDENT_STAGE_NAMES
 from texts.menu import NOT_REGISTERED
 from keyboards.settings import (
     make_student_settings_keyboard, make_teacher_settings_keyboard, 
-    make_back_keyboard, SELECT_SETTINGS_KEYBOARD
+    make_back_keyboard, make_notification_keyboard, SELECT_SETTINGS_KEYBOARD
 )
 from keyboards.stage import STUDENT_STAGES, TEACHER_STAGES
 
@@ -73,7 +76,26 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
     if data == "settings":
         await query.message.reply_text("Выберите раздел настроек", reply_markup=SELECT_SETTINGS_KEYBOARD)
     elif data == "notification":
-        return
+        enabled = get_notifications_state(chat_id)
+
+        await query.message.reply_text(
+            make_notification_state_text(enabled), 
+            reply_markup=make_notification_keyboard(enabled)
+        )
+    elif data == "disable":
+        set_notifications_state(False)
+
+        await query.message.reply_text(
+            SUCCESS_NOTIFICATIONS_TEXT, 
+            reply_markup=make_back_keyboard("settings")
+        )
+    elif data == "enable":
+        set_notifications_state(True)
+
+        await query.message.reply_text(
+            SUCCESS_NOTIFICATIONS_TEXT, 
+            reply_markup=make_back_keyboard("settings")
+        )
     elif data == "profile":
         text, keyboard = make_profile_text_and_keyboard(chat_id, True)
         await query.message.reply_text(text, reply_markup = keyboard)
