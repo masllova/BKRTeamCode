@@ -11,6 +11,24 @@ def add_user(telegram_id: int, full_name: str, role: str, university: str, stage
     )
     conn.commit()
 
+def is_profile_complete(user: dict) -> bool:
+    """Проверяет, заполнены ли все ключевые поля профиля."""
+    required_fields = [
+        "faculty",
+        "department",
+        "articles",
+        "research_interests",
+        "degree",
+        "email",
+        "specialty",
+    ]
+
+    for field in required_fields:
+        value = user.get(field)
+        if not value or (isinstance(value, str) and value.strip() == ""):
+            return False
+    return True
+
 def add_group_to_user(user_id: int, group_id: int):
     with conn.cursor() as cursor:
         cursor.execute("""

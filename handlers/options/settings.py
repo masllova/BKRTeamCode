@@ -1,30 +1,40 @@
 from telegram import Update
 from telegram.ext import ContextTypes
-from db.queries_users import get_user_by_chat_id, update_user_info
+from db.queries_users import get_user_by_chat_id, update_user_info, user_exists
 from texts.settings import (
     SELECT_UNIVERSITY_STUDENT, SELECT_UNIVERSITY_TEACHER, FACULTY_TEXT,
     SPECIALTY_TEXT, DEPARTMENT_TEXT, ARTICLES_TEXT, RESEARCH_INTERESTS_TEXT,
     DEGREE_TEXT, SELECT_STAGE_STUDENT, SELECT_STAGE_TEACHER, EMAIL_TEXT, 
     SUCCESS_TEXT
 )
+from texts.stage import TEACHER_STAGE_NAMES, STUDENT_STAGE_NAMES
+from texts.menu import NOT_REGISTERED
 from keyboards.settings import (
     make_student_settings_keyboard, make_teacher_settings_keyboard, 
     make_back_keyboard, SELECT_SETTINGS_KEYBOARD
 )
 from keyboards.stage import STUDENT_STAGES, TEACHER_STAGES
-from texts.stage import TEACHER_STAGE_NAMES, STUDENT_STAGE_NAMES
 
 settings_state = {}
+
+async def profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.message.chat_id
+
+    if user_exists(chat_id):
+        settings_state[chat_id] = "settings"
+
+        text, keyboard = make_profile_text_and_keyboard(chat_id)
+        await update.message.reply_text(text, reply_markup = keyboard)
+        return
+    else:
+        await update.message.reply_text(NOT_REGISTERED)
 
 async def handle_settings_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
     text = update.message.text.strip()
     state = settings_state.get(chat_id)
 
-    if state == "stage":
-        # TO DO
-        return
-    elif state == "university":
+    if state == "university":
         update_user_info(chat_id, "university", text)
         await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_keyboard("profile"))
     elif state == "faculty":
@@ -65,72 +75,7 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
     elif data == "notification":
         return
     elif data == "profile":
-        user_data = get_user_by_chat_id(chat_id)
-        text = "Здесь вы можете редактировать свой профиль\n\nАктуальная информация:\n"
-
-        has_faculty = False
-        has_department = False
-        has_specialty = False
-        has_degree = False
-        has_articles = False
-        has_interests = False
-        has_email = False
-
-        if user_data["role"] == "student":
-            stage = user_data["stage"]
-            if stage and stage.strip():
-                stage_key = stage.strip()
-                stage_name = STUDENT_STAGE_NAMES.get(stage_key, stage_key)
-                text += f"\nСтупень образования: {stage_name}"
-            text += f"\nУчебное заведение: {user_data["university"]}"
-            faculty = user_data["faculty"]
-
-            if faculty:
-                has_faculty = True
-                text += f"\nФакультет: {faculty}"
-            department = user_data["department"]
-
-            if department:
-                has_department = True
-                text += f"\nКафедра/Направление: {department}"
-            specialty = user_data["specialty"]
-            
-            if specialty:
-                has_specialty = True
-                text += f"\nСпециальность: {user_data["specialty"]}"
-        else:
-            stage = user_data["stage"]
-            if stage and stage.strip():
-                stage_key = stage.strip()
-                stage_name = TEACHER_STAGE_NAMES.get(stage_key, stage_key)
-
-                text += f"\nДолжность: {stage_name}"
-            text += f"\nНаучное учреждение: {user_data["university"]}"
-            degree = user_data["degree"]
-
-            if degree:
-                has_degree = True
-                text += f"\nСтепень: {degree}"
-        articles = user_data["articles"]
-
-        if articles:
-            has_articles = True
-            text += f"\nСтатьи: {articles}"
-        research_interests = user_data["research_interests"]
-        
-        if research_interests:
-            has_interests = True
-            text += f"\nНаучные интересы: {research_interests}"
-        email = user_data["email"]
-        
-        if email:
-            has_email = True
-            text += f"\nПочта: {email}"
-
-        if user_data["role"] == "student":
-            keyboard = make_student_settings_keyboard(has_faculty, has_department, has_specialty, has_articles, has_interests, has_email)
-        else:
-            keyboard = make_teacher_settings_keyboard(has_degree, has_articles, has_interests, has_email)
+        text, keyboard = make_profile_text_and_keyboard(chat_id)
         await query.message.reply_text(text, reply_markup = keyboard)
     elif state == "stage":
         update_user_info(chat_id, "stage", text)
@@ -168,3 +113,73 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
     elif data == "email":
         settings_state[chat_id] = "email"
         await query.message.reply_text(EMAIL_TEXT)
+
+
+def make_profile_text_and_keyboard(chat_id):
+    user_data = get_user_by_chat_id(chat_id)
+    text = "Здесь вы можете редактировать свой профиль\n\nАктуальная информация:\n"
+    has_faculty = False
+    has_department = False
+    has_specialty = False
+    has_degree = False
+    has_articles = False
+    has_interests = False
+    has_email = False
+
+    if user_data["role"] == "student":
+        stage = user_data["stage"]
+        if stage and stage.strip():
+            stage_key = stage.strip()
+            stage_name = STUDENT_STAGE_NAMES.get(stage_key, stage_key)
+            text += f"\nСтупень образования: {stage_name}"
+        text += f"\nУчебное заведение: {user_data["university"]}"
+        faculty = user_data["faculty"]
+
+        if faculty:
+            has_faculty = True
+            text += f"\nФакультет: {faculty}"
+        department = user_data["department"]
+
+        if department:
+            has_department = True
+            text += f"\nКафедра/Направление: {department}"
+        specialty = user_data["specialty"]
+            
+        if specialty:
+            has_specialty = True
+            text += f"\nСпециальность: {user_data["specialty"]}"
+    else:
+        stage = user_data["stage"]
+        if stage and stage.strip():
+            stage_key = stage.strip()
+            stage_name = TEACHER_STAGE_NAMES.get(stage_key, stage_key)
+
+            text += f"\nДолжность: {stage_name}"
+        text += f"\nНаучное учреждение: {user_data["university"]}"
+        degree = user_data["degree"]
+
+        if degree:
+            has_degree = True
+            text += f"\nСтепень: {degree}"
+    articles = user_data["articles"]
+
+    if articles:
+        has_articles = True
+        text += f"\nСтатьи: {articles}"
+    research_interests = user_data["research_interests"]
+        
+    if research_interests:
+        has_interests = True
+        text += f"\nНаучные интересы: {research_interests}"
+    email = user_data["email"]
+        
+    if email:
+        has_email = True
+        text += f"\nПочта: {email}"
+
+    if user_data["role"] == "student":
+        keyboard = make_student_settings_keyboard(has_faculty, has_department, has_specialty, has_articles, has_interests, has_email)
+    else:
+        keyboard = make_teacher_settings_keyboard(has_degree, has_articles, has_interests, has_email)
+
+    return text, keyboard

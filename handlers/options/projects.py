@@ -46,9 +46,9 @@ groups_data_temp = {}
 
 async def projects(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
-    group_ids = get_user_group_ids(chat_id)
 
     if user_exists(chat_id):
+        group_ids = get_user_group_ids(chat_id)
         groups_state[chat_id] = "projects"
         
         if not group_ids:
