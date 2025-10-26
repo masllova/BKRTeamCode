@@ -54,7 +54,7 @@ def make_teacher_settings_keyboard(has_degree, has_articles, has_interests, has_
     if has_degree:
         edit_buttons.append([InlineKeyboardButton("Степень", callback_data=f"teacher_degree")])
     else:
-        add_buttons.append([InlineKeyboardButton("Добавть степень", callback_data=f"teacher_degree")])
+        add_buttons.append([InlineKeyboardButton("Добавить степень", callback_data=f"teacher_degree")])
     if has_articles:
         edit_buttons.append([InlineKeyboardButton("Статьи", callback_data=f"articles")])
     else:

@@ -71,7 +71,8 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
     await query.answer()
     chat_id = query.message.chat_id
     data = query.data
-    state = settings_state.get(chat_id)
+
+    print(data, settings_state)
 
     if data == "settings":
         await query.message.reply_text("Выберите раздел настроек", reply_markup=SELECT_SETTINGS_KEYBOARD)
@@ -99,7 +100,8 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
     elif data == "profile":
         text, keyboard = make_profile_text_and_keyboard(chat_id, True)
         await query.message.reply_text(text, reply_markup = keyboard)
-    elif state == "stage":
+    elif settings_state[chat_id] == "stage":
+        settings_state[chat_id] = "settings"
         update_user_info(chat_id, "stage", text)
         await query.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_keyboard("profile"))
     elif data == "student_stage":
