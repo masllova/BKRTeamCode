@@ -8,7 +8,10 @@ from texts.settings import (
     DEGREE_TEXT, SELECT_STAGE_STUDENT, SELECT_STAGE_TEACHER, EMAIL_TEXT, 
     SUCCESS_TEXT
 )
-from keyboards.settings import make_student_settings_keyboard, make_teacher_settings_keyboard, SELECT_SETTINGS_KEYBOARD
+from keyboards.settings import (
+    make_student_settings_keyboard, make_teacher_settings_keyboard, 
+    make_back_button, SELECT_SETTINGS_KEYBOARD
+)
 from keyboards.stage import STUDENT_STAGES, TEACHER_STAGES
 
 settings_state = {}
@@ -18,22 +21,52 @@ async def handle_settings_text(update: Update, context: ContextTypes.DEFAULT_TYP
     text = update.message.text.strip()
     state = settings_state.get(chat_id)
 
-    # TO DO
-    return
+    if state == "stage":
+        # TO DO
+        return
+    elif state == "university":
+        update_user_info(chat_id, "university", text)
+        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_button("profile"))
+    elif state == "faculty":
+        update_user_info(chat_id, "faculty", text)
+        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_button("profile"))
+    elif state == "university":
+        update_user_info(chat_id, "university", text)
+        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_button("profile"))
+    elif state == "department":
+        update_user_info(chat_id, "department", text)
+        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_button("profile"))
+    elif state == "specialty":
+        update_user_info(chat_id, "specialty", text)
+        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_button("profile"))
+    elif state == "degree":
+        update_user_info(chat_id, "degree", text)
+        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_button("profile"))
+    elif state == "articles":
+        update_user_info(chat_id, "articles", text)
+        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_button("profile"))
+    elif state == "research_interests":
+        update_user_info(chat_id, "research_interests", text)
+        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_button("profile"))
+    elif state == "email":
+        update_user_info(chat_id, "email", text)
+        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_button("profile"))
+                                        
 
 async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     chat_id = query.message.chat_id
     data = query.data
+    state = settings_state.get(chat_id)
 
     if data == "settings":
         await query.message.reply_text("Выберите раздел настроек", reply_markup=SELECT_SETTINGS_KEYBOARD)
-    if data == "notification":
+    elif data == "notification":
         return
-    if data == "profile":
+    elif data == "profile":
         user_data = get_user_by_chat_id(chat_id)
-        text = "Здесь Вы можете редактировать свой профиль\n\nАктуальная информация:"
+        text = "Здесь вы можете редактировать свой профиль\n\nАктуальная информация:\n"
 
         has_faculty = False
         has_department = False
@@ -90,17 +123,20 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
         else:
             keyboard = make_teacher_settings_keyboard(has_degree, has_articles, has_interests, has_email)
         await query.message.reply_text(text, reply_markup = keyboard)
+    elif state == "stage":
+        update_user_info(chat_id, "stage", text)
+        await query.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_button("profile"))
     elif data == "student_stage":
-        # 
+        settings_state[chat_id] = "stage"
         await query.message.reply_text(SELECT_STAGE_STUDENT, reply_markup=STUDENT_STAGES)
     elif data == "teacher_stage":
-        # 
+        settings_state[chat_id] = "stage"
         await query.message.reply_text(SELECT_STAGE_TEACHER, reply_markup=TEACHER_STAGES)
     elif data == "student_university":
-        settings_state[chat_id] = "student_university"
+        settings_state[chat_id] = "university"
         await query.message.reply_text(SELECT_UNIVERSITY_STUDENT)
     elif data == "teacher_university":
-        settings_state[chat_id] = "teacher_university"
+        settings_state[chat_id] = "university"
         await query.message.reply_text(SELECT_UNIVERSITY_TEACHER)
     elif data == "student_faculty":
         settings_state[chat_id] = "student_faculty"

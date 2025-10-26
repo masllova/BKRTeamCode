@@ -37,10 +37,9 @@ def make_student_settings_keyboard(has_faculty, has_department, has_specialty, h
     if has_email:
         edit_buttons.append([InlineKeyboardButton("Почта", callback_data=f"email")])
     else:
-        add_buttons.append([InlineKeyboardButton("Добавить почта", callback_data=f"email")])
+        add_buttons.append([InlineKeyboardButton("Добавить почту", callback_data=f"email")])
 
-    
-    return InlineKeyboardMarkup(edit_buttons + add_buttons)
+    return InlineKeyboardMarkup(edit_buttons + add_buttons + make_back_button("settings"))
 
 def make_teacher_settings_keyboard(has_degree, has_articles, has_interests, has_email):
     edit_buttons = []
@@ -65,4 +64,7 @@ def make_teacher_settings_keyboard(has_degree, has_articles, has_interests, has_
         edit_buttons.append([InlineKeyboardButton("Почта", callback_data=f"email")])
     else:
         add_buttons.append([InlineKeyboardButton("Добавить почта", callback_data=f"email")])
-    return InlineKeyboardMarkup(edit_buttons + add_buttons)
+    return InlineKeyboardMarkup(edit_buttons + add_buttons + make_back_button("settings"))
+
+def make_back_button(command):
+    return [InlineKeyboardButton("Назад", callback_data=f"{command}")]
