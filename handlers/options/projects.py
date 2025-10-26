@@ -4,7 +4,7 @@ from io import BytesIO
 import os
 import re
 import json
-from datetime import datetime
+from datetime import datetime, date
 from db.queries_groups import (
     get_group_by_id, delete_group, update_group_name, add_vkr_to_group,
     add_article_to_group, add_file_to_group,add_task_to_group, 
@@ -434,12 +434,32 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
             else:
                 await update.effective_message.reply_text(NO_DEADLINE, reply_markup=make_teacher_deadline_keyboard(project_id))
             return
-        lines = [DEADLINE_LIST]
+        today = date.today()
+        upcoming = []
+        past = []
 
         for d in deadlines.values():
-            date = d.get("date", "")
-            text = d.get("text", "")
-            lines.append(f"{date} — {text}")
+            date_str = d.get("date", "")
+            text_str = d.get("text", "")
+            try:
+                deadline_date = datetime.strptime(date_str, "%d.%m.%Y").date()
+            except ValueError:
+                continue
+
+            if deadline_date >= today:
+                upcoming.append((deadline_date, text_str))
+            else:
+                past.append((deadline_date, text_str))
+        lines = []
+
+        if upcoming:
+            lines.append(DEADLINE_LIST)
+            for dt, txt in sorted(upcoming):
+                lines.append(f"{dt.strftime('%d.%m.%Y')} — {txt}")
+        if past:
+            lines.append("\nПрошедшие дедлайны:")
+            for dt, txt in sorted(past, reverse=True):
+                lines.append(f"{dt.strftime('%d.%m.%Y')} — {txt}")
         message_text = "\n".join(lines)
 
         if role == "student":
