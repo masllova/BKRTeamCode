@@ -5,6 +5,7 @@ from handlers.options.registration import handle_registration_text, user_state
 from handlers.options.menu import handle_menu_text
 from handlers.options.search import handle_search_text, search_state
 from handlers.options.projects import handle_projects_text, groups_state
+from handlers.options.settings import handle_settings_text, settings_state
 from texts.options import UNKNOWN_COMMAND
 
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -26,6 +27,8 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if groups_state.get(chat_id):
         await handle_projects_text(update, context)
         return
-
+    if settings_state.get(chat_id):
+        await handle_settings_text(update, context)
+        return
     # Если ничего не подошло
     await update.message.reply_text(UNKNOWN_COMMAND)
