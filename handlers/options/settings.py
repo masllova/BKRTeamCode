@@ -35,7 +35,13 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
         user_data = get_user_by_chat_id(chat_id)
         text = "Здесь Вы можете редактировать свой профиль\n\nАктуальная информация:"
 
-        has_faculty, has_department, has_specialty, has_degree, has_articles, has_interests, has_email = False
+        has_faculty = False
+        has_department = False
+        has_specialty = False
+        has_degree = False
+        has_articles = False
+        has_interests = False
+        has_email = False
 
         if user_data["role"] == "student":
             text += f"\nСтупень образования: {user_data["stage"]}"
