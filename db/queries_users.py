@@ -43,20 +43,57 @@ def get_user_role(telegram_id: int) -> str | None:
     return None
 
 def get_user_by_chat_id(telegram_id: int) -> dict | None:
-    cursor.execute(
-        "SELECT telegram_id, full_name, role, university, stage FROM users WHERE telegram_id = %s;",
-        (telegram_id,)
-    )
+    cursor.execute("""
+        SELECT id, telegram_id, full_name, role, created_at, university, stage,
+               faculty, department, articles, research_interests, group_ids,
+               degree, email, specialty
+        FROM users
+        WHERE telegram_id = %s;
+    """, (telegram_id,))
+    
     result = cursor.fetchone()
     if result:
         return {
-            "telegram_id": result[0],
-            "full_name": result[1],
-            "role": result[2],
-            "university": result[3],
-            "stage": result[4],
+            "id": result[0],
+            "telegram_id": result[1],
+            "full_name": result[2],
+            "role": result[3],
+            "created_at": result[4],
+            "university": result[5],
+            "stage": result[6],
+            "faculty": result[7],
+            "department": result[8],
+            "articles": result[9],
+            "research_interests": result[10],
+            "group_ids": result[11],
+            "degree": result[12],
+            "email": result[13],
+            "specialty": result[14],
         }
     return None
+
+def update_user_info(telegram_id: int, field_name: str, value: str):
+    """Обновляет одно строковое поле пользователя по telegram_id."""
+    allowed_fields = {
+        "university",
+        "stage",
+        "faculty",
+        "department",
+        "articles",
+        "research_interests",
+        "degree",
+        "email",
+        "specialty",
+    }
+
+    if field_name not in allowed_fields:
+        raise ValueError(f"Поле '{field_name}' недопустимо для обновления")
+
+    query = f"UPDATE users SET {field_name} = %s WHERE telegram_id = %s;"
+
+    with conn.cursor() as cursor:
+        cursor.execute(query, (value, telegram_id))
+        conn.commit()
 
 def get_user_by_id(user_id: int) -> dict | None:
     cursor.execute(
