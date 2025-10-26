@@ -36,9 +36,12 @@ def set_notifications_state(telegram_id: int, enabled: bool):
     conn.commit()
 
 def is_profile_complete_by_id(telegram_id: int) -> bool:
-    """Проверяет, заполнены ли ключевые поля профиля для пользователя по telegram_id."""
+    """
+    Проверяет, заполнены ли ключевые поля профиля для пользователя по telegram_id,
+    учитывая роль: студент или преподаватель.
+    """
     cursor.execute("""
-        SELECT faculty, department, articles, research_interests, degree, email, specialty
+        SELECT role, faculty, department, articles, research_interests, degree, email, specialty
         FROM users
         WHERE telegram_id = %s;
     """, (telegram_id,))
@@ -46,8 +49,24 @@ def is_profile_complete_by_id(telegram_id: int) -> bool:
     result = cursor.fetchone()
     if not result:
         return False
-
-    for value in result:
+    role = result[0]
+    fields = {
+        "student": ["faculty", "department", "articles", "research_interests", "email", "specialty"],
+        "teacher": ["articles", "research_interests", "degree", "email"]
+    }
+    field_indices = {
+        "faculty": 1,
+        "department": 2,
+        "articles": 3,
+        "research_interests": 4,
+        "degree": 5,
+        "email": 6,
+        "specialty": 7
+    }
+    required_fields = fields.get(role, [])
+    
+    for f in required_fields:
+        value = result[field_indices[f]]
         if not value or (isinstance(value, str) and value.strip() == ""):
             return False
 
