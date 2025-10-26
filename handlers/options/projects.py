@@ -41,7 +41,6 @@ from db.queries_files import get_file
 from texts.menu import NOT_REGISTERED
 from keyboards.menu import get_menu_keyboard
 
-
 groups_state = {}
 groups_data_temp = {}
 

@@ -10,7 +10,9 @@ from texts.search import SEARCH_STUDENT, SEARCH_TEACHER
 from handlers.options.search import search_state
 from handlers.options.requests import requests_state
 from handlers.options.projects import groups_state, groups_data_temp
+from handlers.options.settings import settings_state
 from datetime import datetime, timedelta
+
 import json
 
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -36,6 +38,7 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     requests_state.pop(chat_id, None)
     groups_state.pop(chat_id, None)
     groups_data_temp.pop(chat_id, None)
+    settings_state.pop(chat_id, None)
 
     if command == "search":
         search_state[chat_id] = {
