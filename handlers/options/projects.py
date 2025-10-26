@@ -121,7 +121,9 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
         group = get_group_by_id(project_id)
         name = group.get("name", NO_NAME)
         student_id = group.get("student_id")
+        teacher_id = group.get("teacher_id")
         student = get_user_by_id(student_id)
+        teacher = get_user_by_id(teacher_id) if teacher_id else None
         teacher_name = teacher["full_name"] if teacher else NO_TEACHER
 
         await update.message.reply_text(ADD_TASK_SUCCESS, reply_markup=make_back_keyboard("tasks", project_id))
@@ -166,7 +168,9 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
         group = get_group_by_id(project_id)
         name = group.get("name", NO_NAME)
         student_id = group.get("student_id")
+        teacher_id = group.get("teacher_id")
         student = get_user_by_id(student_id)
+        teacher = get_user_by_id(teacher_id) if teacher_id else None
         teacher_name = teacher["full_name"] if teacher else NO_TEACHER
 
         await update.message.reply_text(ADD_DEADLINE_SUCCESS, reply_markup=make_back_keyboard("deadlines_", project_id))
