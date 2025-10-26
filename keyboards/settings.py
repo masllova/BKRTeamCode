@@ -7,7 +7,7 @@ SELECT_SETTINGS_KEYBOARD = InlineKeyboardMarkup(
     ]
 )
 
-def make_student_settings_keyboard(has_faculty, has_department, has_specialty, has_articles, has_interests, has_email):
+def make_student_settings_keyboard(has_faculty, has_department, has_specialty, has_articles, has_interests, has_email, need_back_button):
     edit_buttons = []
     add_buttons = []
 
@@ -39,9 +39,12 @@ def make_student_settings_keyboard(has_faculty, has_department, has_specialty, h
     else:
         add_buttons.append([InlineKeyboardButton("Добавить почту", callback_data=f"email")])
 
-    return InlineKeyboardMarkup(edit_buttons + add_buttons + make_back_button("settings"))
+    if need_back_button:
+        return InlineKeyboardMarkup(edit_buttons + add_buttons + make_back_button("settings"))
+    else:
+        return InlineKeyboardMarkup(edit_buttons + add_buttons)
 
-def make_teacher_settings_keyboard(has_degree, has_articles, has_interests, has_email):
+def make_teacher_settings_keyboard(has_degree, has_articles, has_interests, has_email, need_back_button):
     edit_buttons = []
     add_buttons = []
 
@@ -64,7 +67,11 @@ def make_teacher_settings_keyboard(has_degree, has_articles, has_interests, has_
         edit_buttons.append([InlineKeyboardButton("Почта", callback_data=f"email")])
     else:
         add_buttons.append([InlineKeyboardButton("Добавить почта", callback_data=f"email")])
-    return InlineKeyboardMarkup(edit_buttons + add_buttons + make_back_button("settings"))
+    
+    if need_back_button:
+        return InlineKeyboardMarkup(edit_buttons + add_buttons + make_back_button("settings"))
+    else:
+        return InlineKeyboardMarkup(edit_buttons + add_buttons)
 
 def make_back_button(command):
     return [[InlineKeyboardButton("Назад", callback_data=f"{command}")]]

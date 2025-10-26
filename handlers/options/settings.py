@@ -23,7 +23,7 @@ async def profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if user_exists(chat_id):
         settings_state[chat_id] = "settings"
 
-        text, keyboard = make_profile_text_and_keyboard(chat_id)
+        text, keyboard = make_profile_text_and_keyboard(chat_id, False)
         await update.message.reply_text(text, reply_markup = keyboard)
         return
     else:
@@ -75,7 +75,7 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
     elif data == "notification":
         return
     elif data == "profile":
-        text, keyboard = make_profile_text_and_keyboard(chat_id)
+        text, keyboard = make_profile_text_and_keyboard(chat_id, True)
         await query.message.reply_text(text, reply_markup = keyboard)
     elif state == "stage":
         update_user_info(chat_id, "stage", text)
@@ -115,7 +115,7 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
         await query.message.reply_text(EMAIL_TEXT)
 
 
-def make_profile_text_and_keyboard(chat_id):
+def make_profile_text_and_keyboard(chat_id, need_back_button):
     user_data = get_user_by_chat_id(chat_id)
     text = "Здесь вы можете редактировать свой профиль\n\nАктуальная информация:\n"
     has_faculty = False
@@ -178,8 +178,8 @@ def make_profile_text_and_keyboard(chat_id):
         text += f"\nПочта: {email}"
 
     if user_data["role"] == "student":
-        keyboard = make_student_settings_keyboard(has_faculty, has_department, has_specialty, has_articles, has_interests, has_email)
+        keyboard = make_student_settings_keyboard(has_faculty, has_department, has_specialty, has_articles, has_interests, has_email, need_back_button)
     else:
-        keyboard = make_teacher_settings_keyboard(has_degree, has_articles, has_interests, has_email)
+        keyboard = make_teacher_settings_keyboard(has_degree, has_articles, has_interests, has_email, need_back_button)
 
     return text, keyboard
