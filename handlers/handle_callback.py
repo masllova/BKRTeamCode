@@ -14,6 +14,8 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = query.message.chat_id
     user = get_user_by_chat_id(chat_id)
 
+    print(user_state)
+
     if not user:
         if chat_id in user_state:
             await handle_registration_callback(update, context)
