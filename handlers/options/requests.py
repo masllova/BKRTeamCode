@@ -58,9 +58,9 @@ async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT
             is_complete = is_profile_complete_by_id(chat_id)
 
             if is_complete:
-                await update.message.reply_text(NO_INCOMING_REQUESTS)
+                await query.message.reply_text(NO_INCOMING_REQUESTS)
             else:
-                await update.message.reply_text(NO_INCOMING_REQUESTS_WITH_RECOMENDATION)
+                await query.message.reply_text(NO_INCOMING_REQUESTS_WITH_RECOMENDATION)
             return
         for r in requests:
             await query.message.reply_text(
