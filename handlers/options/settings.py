@@ -10,7 +10,7 @@ from texts.settings import (
 )
 from keyboards.settings import (
     make_student_settings_keyboard, make_teacher_settings_keyboard, 
-    make_back_button, SELECT_SETTINGS_KEYBOARD
+    make_back_keyboard, SELECT_SETTINGS_KEYBOARD
 )
 from keyboards.stage import STUDENT_STAGES, TEACHER_STAGES
 from texts.stage import TEACHER_STAGE_NAMES, STUDENT_STAGE_NAMES
@@ -27,31 +27,31 @@ async def handle_settings_text(update: Update, context: ContextTypes.DEFAULT_TYP
         return
     elif state == "university":
         update_user_info(chat_id, "university", text)
-        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_button("profile"))
+        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_keyboard("profile"))
     elif state == "faculty":
         update_user_info(chat_id, "faculty", text)
-        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_button("profile"))
+        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_keyboard("profile"))
     elif state == "university":
         update_user_info(chat_id, "university", text)
-        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_button("profile"))
+        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_keyboard("profile"))
     elif state == "department":
         update_user_info(chat_id, "department", text)
-        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_button("profile"))
+        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_keyboard("profile"))
     elif state == "specialty":
         update_user_info(chat_id, "specialty", text)
-        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_button("profile"))
+        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_keyboard("profile"))
     elif state == "degree":
         update_user_info(chat_id, "degree", text)
-        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_button("profile"))
+        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_keyboard("profile"))
     elif state == "articles":
         update_user_info(chat_id, "articles", text)
-        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_button("profile"))
+        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_keyboard("profile"))
     elif state == "research_interests":
         update_user_info(chat_id, "research_interests", text)
-        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_button("profile"))
+        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_keyboard("profile"))
     elif state == "email":
         update_user_info(chat_id, "email", text)
-        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_button("profile"))
+        await update.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_keyboard("profile"))
                                         
 
 async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -136,7 +136,7 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
         await query.message.reply_text(text, reply_markup = keyboard)
     elif state == "stage":
         update_user_info(chat_id, "stage", text)
-        await query.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_button("profile"))
+        await query.message.reply_text(SUCCESS_TEXT, reply_markup = make_back_keyboard("profile"))
     elif data == "student_stage":
         settings_state[chat_id] = "stage"
         await query.message.reply_text(SELECT_STAGE_STUDENT, reply_markup=STUDENT_STAGES)
