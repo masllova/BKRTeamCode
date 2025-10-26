@@ -83,14 +83,14 @@ async def handle_settings_callback(update: Update, context: ContextTypes.DEFAULT
             reply_markup=make_notification_keyboard(enabled)
         )
     elif data == "disable":
-        set_notifications_state(False)
+        set_notifications_state(chat_id, False)
 
         await query.message.reply_text(
             SUCCESS_NOTIFICATIONS_TEXT, 
             reply_markup=make_back_keyboard("settings")
         )
     elif data == "enable":
-        set_notifications_state(True)
+        set_notifications_state(chat_id, True)
 
         await query.message.reply_text(
             SUCCESS_NOTIFICATIONS_TEXT, 
