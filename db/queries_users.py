@@ -17,9 +17,9 @@ def get_notifications_state(telegram_id: int) -> bool:
         "SELECT notifications_enabled FROM users WHERE telegram_id = %s;",
         (telegram_id,)
     )
-    print("result", result)
     result = cursor.fetchone()
     if result is not None:
+        print("result", result[0])
         return result[0]
     return False  # если юзера нет в БД — считаем, что выключено
 
