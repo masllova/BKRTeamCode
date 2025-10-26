@@ -126,9 +126,7 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
         teacher_name = teacher["full_name"] if teacher else NO_TEACHER
 
         await update.message.reply_text(ADD_TASK_SUCCESS, reply_markup=make_back_keyboard("tasks", project_id))
-        enabled = get_notifications_state(chat_id)
-
-        print("enabled", enabled)
+        enabled = get_notifications_state(student["telegram_id"])
 
         if enabled:
             await context.bot.send_message(
@@ -178,7 +176,7 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
         teacher_name = teacher["full_name"] if teacher else NO_TEACHER
 
         await update.message.reply_text(ADD_DEADLINE_SUCCESS, reply_markup=make_back_keyboard("deadlines_", project_id))
-        enabled = get_notifications_state(chat_id)
+        enabled = get_notifications_state(student["telegram_id"])
 
         if enabled:
             await context.bot.send_message(
@@ -218,7 +216,7 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
                 remind_id = student["telegram_id"]
 
             await update.message.reply_text(UPDATE_VKR_FILE_SUCCESS, reply_markup=make_back_keyboard("vkr", project_id))
-            enabled = get_notifications_state(chat_id)
+            enabled = get_notifications_state(remind_id)
 
             if enabled:
                 await context.bot.send_message(
@@ -245,7 +243,7 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
                     remind_id = student["telegram_id"]
 
                 await update.message.reply_text(UPDATE_VKR_LINK_SUCCESS, reply_markup=make_back_keyboard("vkr", project_id))
-                enabled = get_notifications_state(chat_id)
+                enabled = get_notifications_state(remind_id)
 
                 if enabled:
                     await context.bot.send_message(
@@ -289,7 +287,7 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
                 remind_id = student["telegram_id"]
 
             await update.message.reply_text(ADD_ARTICLE_FILE, reply_markup=make_back_keyboard("articles", project_id))
-            enabled = get_notifications_state(chat_id)
+            enabled = get_notifications_state(remind_id)
 
             if enabled:
                 await context.bot.send_message(
@@ -316,7 +314,7 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
                     remind_id = student["telegram_id"]
 
                 await update.message.reply_text(ADD_ARTICLE_LINK, reply_markup=make_back_keyboard("articles", project_id))
-                enabled = get_notifications_state(chat_id)
+                enabled = get_notifications_state(remind_id)
 
                 if enabled:
                     await context.bot.send_message(
@@ -360,7 +358,7 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
                 remind_id = student["telegram_id"]
 
             await update.message.reply_text(ADD_FILE, reply_markup=make_back_keyboard("another_files_", project_id))
-            enabled = get_notifications_state(chat_id)
+            enabled = get_notifications_state(remind_id)
 
             if enabled:
                 await context.bot.send_message(
@@ -387,7 +385,7 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
                     remind_id = student["telegram_id"]
 
                 await update.message.reply_text(ADD_LINK, reply_markup=make_back_keyboard("another_files_", project_id))
-                enabled = get_notifications_state(chat_id)
+                enabled = get_notifications_state(remind_id)
 
                 if enabled:
                     await context.bot.send_message(
@@ -405,8 +403,6 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
     query = update.callback_query
     await query.answer()
     data = query.data
-
-    print(data)
 
     if data.startswith("project_"):
         project_id = int(data.split("_")[-1])

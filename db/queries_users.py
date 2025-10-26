@@ -19,7 +19,6 @@ def get_notifications_state(telegram_id: int) -> bool:
     )
     result = cursor.fetchone()
     if result is not None:
-        print("result", result[0])
         return result[0]
     return False  # если юзера нет в БД — считаем, что выключено
 

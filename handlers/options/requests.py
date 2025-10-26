@@ -145,7 +145,7 @@ async def handle_requests_callback(update: Update, context: ContextTypes.DEFAULT
             chat_id=sender_info["telegram_id"],
             text=REQUEST_REMINDER_SENT_TEXT
         )
-        enabled = get_notifications_state(sender_info["telegram_id"])
+        enabled = get_notifications_state(receiver_info["telegram_id"])
 
         if enabled:
             await context.bot.send_message(
