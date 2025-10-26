@@ -26,7 +26,9 @@ from texts.projects import (
     ADD_LINK, ADD_TASK_SUCCESS, ENTER_NEW_TASK, TASK, TASKS_LIST, NO_ACTUAL_TASKS, SELECT_ACTION,
     COMPLETE_TASK, COMPLETE_TASKS, ACTUAL_TASKS, NO_TASKS, NO_COMPLETE_TASKS, COMPLETE_TASK_LIST,
     ACTUAL_TASK, ENTER_COMMENT, REMIND, REMIND_SUCCSESS, DEADLINE_LIST, NO_DEADLINE, ENTER_NEW_DEADLINE,
-    ENTER_NEW_DESCRIPTION, ADD_DEADLINE_SUCCESS, format_project
+    ENTER_NEW_DESCRIPTION, ADD_DEADLINE_SUCCESS, ADD_TASK_REMIND, ADD_DEADLINE_REMIND, 
+    UPDATE_VKR_FILE_SUCCESS_REMIND, UPDATE_FILE_SUCCESS_REMIND, UPDATE_ARTICLE_FILE_SUCCESS_REMIND,
+      format_project
 )
 from keyboards.projects import (
     make_project_keyboard, make_back_keyboard, make_settings_keyboard, make_files_keyboard,
@@ -114,9 +116,18 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
         text = update.message.text.strip()
         project_id = int(state.split("_")[-1])
         add_task_to_group(project_id, text)
+
         groups_state[chat_id] = "projects"
+        group = get_group_by_id(project_id)
+        name = group.get("name", NO_NAME)
+        student_id = group.get("student_id")
+        student = get_user_by_id(student_id)
 
         await update.message.reply_text(ADD_TASK_SUCCESS, reply_markup=make_back_keyboard("tasks", project_id))
+        await context.bot.send_message(
+            chat_id=student["telegram_id"],
+            text=ADD_TASK_REMIND.format(teacher_name=teacher_name, project_name=name)
+        )
     elif state.startswith("add_deadline_"):
         text = update.message.text.strip()
         project_id = int(state.split("_")[-1])
@@ -144,7 +155,6 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
         groups_state[chat_id] = f"add_description_{project_id}"
 
         await update.message.reply_text(ENTER_NEW_DESCRIPTION)
-
     elif state.startswith("add_description_"):
         text = update.message.text.strip()
         project_id = int(state.split("_")[-1])
@@ -154,6 +164,10 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
         groups_data_temp.pop(chat_id, None)
 
         await update.message.reply_text(ADD_DEADLINE_SUCCESS, reply_markup=make_back_keyboard("deadlines_", project_id))
+        await context.bot.send_message(
+            chat_id=student["telegram_id"],
+            text=ADD_DEADLINE_REMIND.format(teacher_name=teacher_name, project_name=name)
+        )
     elif state.startswith("add_vkr_"):
         project_id = int(state.split("_")[-1])
 
@@ -174,7 +188,23 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
             add_vkr_to_group(project_id, save_path, kind="file")
             groups_state[chat_id] = "projects"
 
+            group = get_group_by_id(project_id)
+            name = group.get("name", NO_NAME)
+            teacher_id = group.get("teacher_id")
+            student_id = group.get("student_id")
+            student = get_user_by_id(student_id)
+            teacher = get_user_by_id(teacher_id) if teacher_id else None
+
+            if chat_id == student["telegram_id"]:
+                remind_id = teacher["telegram_id"]
+            else:
+                remind_id = student["telegram_id"]
+
             await update.message.reply_text(UPDATE_VKR_FILE_SUCCESS, reply_markup=make_back_keyboard("vkr", project_id))
+            await context.bot.send_message(
+                chat_id=remind_id,
+                text=UPDATE_VKR_FILE_SUCCESS_REMIND.format(project_name=name)
+            )
         elif update.message.text:
             text = update.message.text.strip()
 
@@ -182,7 +212,23 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
                 add_vkr_to_group(project_id, text, kind="link")
                 groups_state[chat_id] = "projects"
 
+                group = get_group_by_id(project_id)
+                name = group.get("name", NO_NAME)
+                teacher_id = group.get("teacher_id")
+                student_id = group.get("student_id")
+                student = get_user_by_id(student_id)
+                teacher = get_user_by_id(teacher_id) if teacher_id else None
+
+                if chat_id == student["telegram_id"]:
+                    remind_id = teacher["telegram_id"]
+                else:
+                    remind_id = student["telegram_id"]
+
                 await update.message.reply_text(UPDATE_VKR_LINK_SUCCESS, reply_markup=make_back_keyboard("vkr", project_id))
+                await context.bot.send_message(
+                    chat_id=remind_id,
+                    text=UPDATE_VKR_FILE_SUCCESS_REMIND.format(project_name=name)
+                )
             else:
                 await update.message.reply_text(RESEND_LINK)
         else:
@@ -207,7 +253,23 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
             add_article_to_group(project_id, save_path, kind="file")
             groups_state[chat_id] = "projects"
 
+            group = get_group_by_id(project_id)
+            name = group.get("name", NO_NAME)
+            teacher_id = group.get("teacher_id")
+            student_id = group.get("student_id")
+            student = get_user_by_id(student_id)
+            teacher = get_user_by_id(teacher_id) if teacher_id else None
+
+            if chat_id == student["telegram_id"]:
+                remind_id = teacher["telegram_id"]
+            else:
+                remind_id = student["telegram_id"]
+
             await update.message.reply_text(ADD_ARTICLE_FILE, reply_markup=make_back_keyboard("articles", project_id))
+            await context.bot.send_message(
+                chat_id=remind_id,
+                text=UPDATE_ARTICLE_FILE_SUCCESS_REMIND.format(project_name=name)
+            )
         elif update.message.text:
             text = update.message.text.strip()
 
@@ -215,7 +277,23 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
                 add_article_to_group(project_id, text, kind="link")
                 groups_state[chat_id] = "projects"
 
+                group = get_group_by_id(project_id)
+                name = group.get("name", NO_NAME)
+                teacher_id = group.get("teacher_id")
+                student_id = group.get("student_id")
+                student = get_user_by_id(student_id)
+                teacher = get_user_by_id(teacher_id) if teacher_id else None
+
+                if chat_id == student["telegram_id"]:
+                    remind_id = teacher["telegram_id"]
+                else:
+                    remind_id = student["telegram_id"]
+
                 await update.message.reply_text(ADD_ARTICLE_LINK, reply_markup=make_back_keyboard("articles", project_id))
+                await context.bot.send_message(
+                    chat_id=remind_id,
+                    text=UPDATE_ARTICLE_FILE_SUCCESS_REMIND.format(project_name=name)
+                )
             else:
                 await update.message.reply_text(RESEND_LINK)
         else:
@@ -240,7 +318,23 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
             add_file_to_group(project_id, save_path, kind="file")
             groups_state[chat_id] = "projects"
 
+            group = get_group_by_id(project_id)
+            name = group.get("name", NO_NAME)
+            teacher_id = group.get("teacher_id")
+            student_id = group.get("student_id")
+            student = get_user_by_id(student_id)
+            teacher = get_user_by_id(teacher_id) if teacher_id else None
+
+            if chat_id == student["telegram_id"]:
+                remind_id = teacher["telegram_id"]
+            else:
+                remind_id = student["telegram_id"]
+
             await update.message.reply_text(ADD_FILE, reply_markup=make_back_keyboard("another_files_", project_id))
+            await context.bot.send_message(
+                chat_id=remind_id,
+                text=UPDATE_FILE_SUCCESS_REMIND.format(project_name=name)
+            )
         elif update.message.text:
             text = update.message.text.strip()
 
@@ -248,7 +342,23 @@ async def handle_projects_text(update: Update, context: ContextTypes.DEFAULT_TYP
                 add_file_to_group(project_id, text, kind="link")
                 groups_state[chat_id] = "projects"
 
+                group = get_group_by_id(project_id)
+                name = group.get("name", NO_NAME)
+                teacher_id = group.get("teacher_id")
+                student_id = group.get("student_id")
+                student = get_user_by_id(student_id)
+                teacher = get_user_by_id(teacher_id) if teacher_id else None
+
+                if chat_id == student["telegram_id"]:
+                    remind_id = teacher["telegram_id"]
+                else:
+                    remind_id = student["telegram_id"]
+
                 await update.message.reply_text(ADD_LINK, reply_markup=make_back_keyboard("another_files_", project_id))
+                await context.bot.send_message(
+                    chat_id=remind_id,
+                    text=UPDATE_FILE_SUCCESS_REMIND.format(project_name=name)
+                )
             else:
                 await update.message.reply_text(RESEND_LINK)
         else:
