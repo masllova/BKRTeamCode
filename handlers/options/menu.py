@@ -149,8 +149,7 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     for date, deadline_text in sorted(upcoming):
                         text += f"\n{date.strftime('%d.%m.%Y')} — {deadline_text}"
         role = get_user_role(chat_id)
-        # ДЛЯ ТЕСТА
-        keyboard = get_menu_keyboard("teacher") 
+        keyboard = get_menu_keyboard(role) 
 
         await update.message.reply_text(text, reply_markup=keyboard, parse_mode="Markdown")
         return

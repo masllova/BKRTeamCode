@@ -116,7 +116,9 @@ def get_user_by_id(user_id: int) -> dict | None:
 
 def search_users(query: str, target_role: str, last_id: int | None = None) -> list[dict] | None:
     base_sql = """
-        SELECT id, telegram_id, full_name, role, university, stage, faculty, department, articles, research_interests
+        SELECT id, telegram_id, full_name, role, university, stage,
+               faculty, department, specialty, degree, articles,
+               research_interests, email
         FROM users
         WHERE role = %s
     """
@@ -133,15 +135,18 @@ def search_users(query: str, target_role: str, last_id: int | None = None) -> li
         OR stage ILIKE %s
         OR faculty ILIKE %s
         OR department ILIKE %s
+        OR specialty ILIKE %s
+        OR degree ILIKE %s
         OR articles ILIKE %s
         OR research_interests ILIKE %s
+        OR email ILIKE %s
       )
     ORDER BY id
     LIMIT 3;
     """
 
     search_pattern = f"%{query}%"
-    params.extend([search_pattern] * 7)
+    params.extend([search_pattern] * 11)
     cursor.execute(base_sql, tuple(params))
     results = cursor.fetchall()
 
@@ -159,8 +164,11 @@ def search_users(query: str, target_role: str, last_id: int | None = None) -> li
             "stage": r[5],
             "faculty": r[6],
             "department": r[7],
-            "articles": r[8],
-            "research_interests": r[9],
+            "specialty": r[8],
+            "degree": r[9],
+            "articles": r[10],
+            "research_interests": r[11],
+            "email": r[12],
         })
 
     return users
