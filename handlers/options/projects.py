@@ -56,6 +56,7 @@ async def projects(update: Update, context: ContextTypes.DEFAULT_TYPE):
         buttons = []
 
         for id in group_ids:
+            print(id)
             group = get_group_by_id(id)
             if group:
                 buttons.append([
@@ -403,6 +404,8 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
     query = update.callback_query
     await query.answer()
     data = query.data
+
+    print(data)
 
     if data.startswith("project_"):
         project_id = int(data.split("_")[-1])
