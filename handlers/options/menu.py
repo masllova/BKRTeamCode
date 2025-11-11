@@ -40,6 +40,8 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     groups_data_temp.pop(chat_id, None)
     settings_state.pop(chat_id, None)
 
+    print(command)
+
     if command == "search":
         search_state[chat_id] = {
             "query": None,
