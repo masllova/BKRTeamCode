@@ -22,7 +22,7 @@ from texts.projects import (
     ACTUAL_TASK, ENTER_COMMENT, REMIND, REMIND_SUCCSESS, DEADLINE_LIST, NO_DEADLINE, ENTER_NEW_DEADLINE,
     ENTER_NEW_DESCRIPTION, ADD_DEADLINE_SUCCESS, ADD_TASK_REMIND, ADD_DEADLINE_REMIND, 
     UPDATE_VKR_FILE_SUCCESS_REMIND, UPDATE_FILE_SUCCESS_REMIND, UPDATE_ARTICLE_FILE_SUCCESS_REMIND,
-    format_project
+    TASK_STATUS_REMIND, format_project
 )
 from keyboards.projects import (
     make_project_keyboard, make_back_keyboard, make_settings_keyboard, make_files_keyboard,
@@ -530,6 +530,21 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         task_id = "_".join(parts[1:-1])
         set_task_status(project_id, task_id, True)
 
+        group = get_group_by_id(project_id)
+        project_name = group.get("name", NO_NAME)
+        tasks = group.get("tasks") or {}
+        task = tasks.get(task_id, {})
+        task_name = task.get("name", "")
+        teacher_id = group.get("teacher_id")
+        teacher = get_user_by_id(teacher_id) if teacher_id else None
+
+        enabled = get_notifications_state(chat_id)
+
+        if enabled:
+            await context.bot.send_message(
+                chat_id=teacher["telegram_id"],
+                text=TASK_STATUS_REMIND.format(project_name=project_name, task_name=task_name)
+            )
         await query.edit_message_text(text=COMPLETE_TASK)
     elif data.startswith("completed_tasks_"):
         project_id, name = await extract_project_info(data, query)
@@ -554,6 +569,22 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         project_id = int(parts[-1])
         task_id = "_".join(parts[1:-1])
         set_task_status(project_id, task_id, False)
+
+        group = get_group_by_id(project_id)
+        project_name = group.get("name", NO_NAME)
+        tasks = group.get("tasks") or {}
+        task = tasks.get(task_id, {})
+        task_name = task.get("name", "")
+        teacher_id = group.get("teacher_id")
+        teacher = get_user_by_id(teacher_id) if teacher_id else None
+
+        enabled = get_notifications_state(chat_id)
+
+        if enabled:
+            await context.bot.send_message(
+                chat_id=teacher["telegram_id"],
+                text=TASK_STATUS_REMIND.format(project_name=project_name, task_name=task_name)
+            )
 
         await query.edit_message_text(text=ACTUAL_TASK)
     elif data.startswith("delete_"):
