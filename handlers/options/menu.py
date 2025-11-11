@@ -179,7 +179,7 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             group = get_group_by_id(id)
 
             if group:
-                text += f"\n\n*Проект*: {group['name']}"
+                text += f"\n\nПроект: {group['name']}"
                 print(text)
                 text += f"\n\n📎 Файлы:"
                 print(text)
