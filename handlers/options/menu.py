@@ -174,29 +174,36 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
         text = "📊 Статистика"
+        print(text)
 
         for id in group_ids:
             group = get_group_by_id(id)
 
             if group:
                 text += f"\n\n*Проект*: {group['name']}"
+                print(text)
                 text += f"\n\n📎 Файлы:"
+                print(text)
                 file_count = 0
                 vkr_list = group.get("vkr", [])
                 
                 if vkr_list:
                     file_count +=1
                     text += "\nФайл ВКР прикреплен"
+                    print(text)
                 else:
                     text += "\nФайл ВКР отсутсвует"
+                    print(text)
                 files_list = group.get("files", [])
 
                 if files_list:
                     text += f"\nКоличесво прочих файлов: {len(files_list)}"
+                    print(text)
                 articles_list = group.get("articles", [])
 
                 if articles_list:
                     text += f"\nКоличесво статей: {len(articles_list)}"
+                    print(text)
 
                 tasks = group.get("tasks") or {}
 
@@ -204,9 +211,11 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     tasks = json.loads(tasks)
                 if tasks:
                     text += "\n\n📌 Задачи:"
+                    print(text)
                     text += f"\n- Всего: {len(tasks)}"
+                    print(text)
                     text += f"\n- Выполнено: {sum(1 for task in tasks.values() if not task.get('done', False))}"
-
+                    print(text)
                 deadlines = group.get("deadlines") or {}
                 if isinstance(deadlines, str):
                     deadlines = json.loads(deadlines)
@@ -228,8 +237,10 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
                 if upcoming:
                     text += "\n\n📅 Ближайшие дедлайны: (на 28 дней)"
+                    print(text)
                     for date, deadline_text in sorted(upcoming):
                         text += f"\n{date.strftime('%d.%m.%Y')} — {deadline_text}"
+                        print(text)
                 
 
                 student_id = group.get("student_id")
@@ -238,9 +249,11 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 student_email = student["email"]
 
                 text += f"\n\n👤 Студент: {student_name}"
+                print(text)
 
                 if student_email:
                     text += f"\nПочта: {student_email}"
+                    print(text)
         role = get_user_role(chat_id)
         keyboard = get_menu_keyboard(role) 
         await update.message.reply_text(text, reply_markup=keyboard, parse_mode="Markdown")
