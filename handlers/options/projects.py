@@ -537,8 +537,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         task_name = task.get("name", "")
         teacher_id = group.get("teacher_id")
         teacher = get_user_by_id(teacher_id) if teacher_id else None
-
-        enabled = get_notifications_state(chat_id)
+        enabled = get_notifications_state(teacher["telegram_id"])
 
         if enabled:
             await context.bot.send_message(
@@ -577,8 +576,7 @@ async def handle_projects_callback(update: Update, context: ContextTypes.DEFAULT
         task_name = task.get("name", "")
         teacher_id = group.get("teacher_id")
         teacher = get_user_by_id(teacher_id) if teacher_id else None
-
-        enabled = get_notifications_state(chat_id)
+        enabled = get_notifications_state(teacher["telegram_id"])
 
         if enabled:
             await context.bot.send_message(
