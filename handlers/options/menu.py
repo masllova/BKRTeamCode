@@ -171,7 +171,7 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             group = get_group_by_id(id)
 
             if group:
-                text += f"\n\n*Проект*: {group["name"]}"
+                text += f"\n\n*Проект*: {group['name']}"
                 text += f"\n\n📎 Файлы:"
                 file_count = 0
                 vkr_list = group.get("vkr", [])
@@ -197,7 +197,7 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 if tasks:
                     text += "\n\n📌 Задачи:"
                     text += f"\n- Всего: {len(tasks)}"
-                    text += f"\n- Выполнено: {sum(1 for task in tasks.values() if not task.get("done", False))}"
+                    text += f"\n- Выполнено: {sum(1 for task in tasks.values() if not task.get('done', False))}"
 
                 deadlines = group.get("deadlines") or {}
                 if isinstance(deadlines, str):
