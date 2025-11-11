@@ -172,79 +172,94 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "/requests - Посмотреть заявки"
             )
             return
-
-        role = get_user_role(chat_id)
-        keyboard = get_menu_keyboard(role)
-
-        await update.message.reply_text("📊 Статистика", reply_markup=keyboard)
+        text = "📊 Статистика"
+        print(text)
 
         for id in group_ids:
             group = get_group_by_id(id)
-            if not group:
-                continue
 
-            # Сохраняем все блоки текста в список
-            blocks = []
+            if group:
+                text += f"\n\n*Проект*: {group['name']}"
+                print(text)
+                text += f"\n\n📎 Файлы:"
+                print(text)
+                file_count = 0
+                vkr_list = group.get("vkr", [])
+                
+                if vkr_list:
+                    file_count +=1
+                    text += "\nФайл ВКР прикреплен"
+                    print(text)
+                else:
+                    text += "\nФайл ВКР отсутсвует"
+                    print(text)
+                files_list = group.get("files", [])
 
-            # 1. Проект
-            project_name_safe = escape_markdown(group['name'], version=2)
-            blocks.append(f"*Проект*: {project_name_safe}")
+                if files_list:
+                    text += f"\nКоличесво прочих файлов: {len(files_list)}"
+                    print(text)
+                articles_list = group.get("articles", [])
 
-            # 2. Файлы и статьи
-            files_text = "📎 Файлы:\n"
-            vkr_list = group.get("vkr", [])
-            files_list = group.get("files", [])
-            articles_list = group.get("articles", [])
+                if articles_list:
+                    text += f"\nКоличесво статей: {len(articles_list)}"
+                    print(text)
 
-            files_text += "Файл ВКР прикреплен" if vkr_list else "Файл ВКР отсутствует"
-            files_text += f"\nКол-во прочих файлов: {len(files_list)}"
-            files_text += f"\nКол-во статей: {len(articles_list)}"
-            blocks.append(escape_markdown(files_text, version=2))
+                tasks = group.get("tasks") or {}
 
-            # 3. Задачи
-            tasks = group.get("tasks") or {}
-            if isinstance(tasks, str):
-                tasks = json.loads(tasks)
-            if tasks:
-                tasks_text = "📌 Задачи:\n"
-                tasks_text += f"- Всего: {len(tasks)}\n"
-                tasks_text += f"- Выполнено: {sum(1 for task in tasks.values() if task.get('done', False))}"
-                blocks.append(escape_markdown(tasks_text, version=2))
+                if isinstance(tasks, str):
+                    tasks = json.loads(tasks)
+                if tasks:
+                    text += "\n\n📌 Задачи:"
+                    print(text)
+                    text += f"\n- Всего: {len(tasks)}"
+                    print(text)
+                    text += f"\n- Выполнено: {sum(1 for task in tasks.values() if not task.get('done', False))}"
+                    print(text)
+                deadlines = group.get("deadlines") or {}
+                if isinstance(deadlines, str):
+                    deadlines = json.loads(deadlines)
 
-            # 4. Дедлайны
-            deadlines = group.get("deadlines") or {}
-            if isinstance(deadlines, str):
-                deadlines = json.loads(deadlines)
+                today = datetime.today().date()
+                limit_date = today + timedelta(days=28)
 
-            today = datetime.today().date()
-            limit_date = today + timedelta(days=28)
-            upcoming = []
-            for d in deadlines.values():
-                date_str = d.get("date", "")
-                text_str = d.get("text", "")
-                try:
-                    deadline_date = datetime.strptime(date_str, "%d.%m.%Y").date()
-                    if today <= deadline_date <= limit_date:
-                        upcoming.append((deadline_date, text_str))
-                except ValueError:
-                    continue
+                # собираем дедлайны в пределах 28 дней
+                upcoming = []
+                for d in deadlines.values():
+                    date_str = d.get("date", "")
+                    text_str = d.get("text", "")
+                    try:
+                        deadline_date = datetime.strptime(date_str, "%d.%m.%Y").date()
+                        if today <= deadline_date <= limit_date:
+                            upcoming.append((deadline_date, text_str))
+                    except ValueError:
+                        continue
 
-            if upcoming:
-                deadlines_text = "📅 Ближайшие дедлайны (на 28 дней):\n"
-                for date, deadline_text in sorted(upcoming):
-                    deadlines_text += f"{date.strftime('%d.%m.%Y')} — {escape_markdown(deadline_text, version=2)}\n"
-                blocks.append(deadlines_text.strip())
+                if upcoming:
+                    text += "\n\n📅 Ближайшие дедлайны: (на 28 дней)"
+                    print(text)
+                    for date, deadline_text in sorted(upcoming):
+                        text += f"\n{date.strftime('%d.%m.%Y')} — {deadline_text}"
+                        print(text)
+                
 
-            # 5. Студент
-            student_id = group.get("student_id")
-            student = get_user_by_id(student_id) if student_id else None
-            student_name = escape_markdown(student["full_name"], version=2) if student else NO_STUDENT
-            student_email = escape_markdown(student["email"], version=2) if student and student.get("email") else "-"
-            blocks.append(f"👤 Студент: {student_name}\nПочта: {student_email}")
+                student_id = group.get("student_id")
+                student = get_user_by_id(student_id) if student_id else None
+                student_name = student["full_name"] if student else NO_STUDENT
+                student_email = student["email"]
 
-            # Отправка всех блоков отдельно
-            for block in blocks:
-                await update.message.reply_text(block, reply_markup=keyboard, parse_mode="MarkdownV2")
+                text += f"\n\n👤 Студент: {student_name}"
+                print(text)
+
+                if student_email:
+                    text += f"\nПочта: {student_email}"
+                    print(text)
+        role = get_user_role(chat_id)
+        keyboard = get_menu_keyboard(role) 
+        await update.message.reply_text(md_safe(text), reply_markup=keyboard, parse_mode="MarkdownV2")
+        return
     else:
         await update.message.reply_text(NOT_REGISTERED)
         return
+    
+def md_safe(text):
+    return escape_markdown(text, version=2)
