@@ -12,6 +12,7 @@ from handlers.options.requests import requests_state
 from handlers.options.projects import groups_state, groups_data_temp
 from handlers.options.settings import settings_state
 from datetime import datetime, timedelta
+from telegram.helpers import escape_markdown
 
 import json
 
@@ -111,6 +112,8 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
         text = "🗂️ Журнал задач и дедлайнов\n\n📁 *Проекты:*"
 
+        print(text)
+
         for id in group_ids:
             group = get_group_by_id(id)
 
@@ -121,11 +124,13 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     tasks = json.loads(tasks)
                 if tasks:
                     text += f"\nПроект: {group["name"]}"
+                    print(text)
 
                     for _, task in tasks.items():
                         if task.get("done"):
                             continue
                         text += f"\n- {task.get('name', '')}"
+                        print(text)
                 deadlines = group.get("deadlines") or {}
                 if isinstance(deadlines, str):
                     deadlines = json.loads(deadlines)
@@ -147,9 +152,12 @@ async def handle_menu_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
                 if upcoming:
                     text += "\n\n📅  *Ближайшие дедлайны (на 28 дней):*\n"
+                    print(text)
                     text += f"\nПроект: {group['name']}"
+                    print(text)
                     for date, deadline_text in sorted(upcoming):
                         text += f"\n{date.strftime('%d.%m.%Y')} — {deadline_text}"
+                        print(text)
         role = get_user_role(chat_id)
         keyboard = get_menu_keyboard(role) 
 
